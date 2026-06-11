@@ -17,7 +17,7 @@ app.use(helmet());
 
 const allowedOrigins = process.env.CLIENT_ORIGIN
   ? process.env.CLIENT_ORIGIN.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://localhost:3000'];
+  : ['http://localhost:5173', 'https://mis.techversity.ai'];
 
 app.use(cors({
   origin: (origin, callback) => {
