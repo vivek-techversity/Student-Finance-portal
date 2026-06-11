@@ -10,8 +10,7 @@ import StudentModal from '../students/StudentModal';
 import PaymentModal from '../payments/PaymentModal';
 import ConfirmDialog from '../ui/ConfirmDialog';
 
-// ── Global context shared with child pages via window (lightweight) ──────────
-// Pages import useAppData hook below to read this
+// ── Global context shared with child pages via window ──────────────────────────
 let _setAppData = null;
 export function useAppData() {
   const [data, setData] = useState(() => window.__appData || {});
@@ -32,7 +31,6 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  // ── Global data hooks ────────────────────────────────────────
   const {
     students, loading: studentsLoading, refetch: refetchStudents,
     createStudent, updateStudent, deleteStudent,
@@ -43,36 +41,26 @@ export default function AppLayout() {
     createPayment, updatePayment, deletePayment, appendPayment,
   } = usePayments();
 
-  // ── Live rate ────────────────────────────────────────────────
   const [liveRate, setLiveRate] = useState(null);
   const [rateLoading, setRateLoading] = useState(false);
 
   const fetchRate = useCallback(async () => {
-  setRateLoading(true);
-  try {
-    const r = await fetch('https://open.er-api.com/v6/latest/USD');
-    const d = await r.json();
-    if (d.rates?.INR) {
-      setLiveRate(d.rates.INR);
-      setRateLoading(false);  // ← yahi fix hai
-      return;
-    }
-  } catch { /* fallback */ }
-  try {
-    const r2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=INR');
-    const d2 = await r2.json();
-    if (d2.rates?.INR) setLiveRate(d2.rates.INR);
-  } 
-  finally {
-    setRateLoading(false);
-  }
-}, []);
+    setRateLoading(true);
+    try {
+      const r = await fetch('https://open.er-api.com/v6/latest/USD');
+      const d = await r.json();
+      if (d.rates?.INR) { setLiveRate(d.rates.INR); setRateLoading(false); return; }
+    } catch { /* fallback */ }
+    try {
+      const r2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=INR');
+      const d2 = await r2.json();
+      if (d2.rates?.INR) setLiveRate(d2.rates.INR);
+    } finally { setRateLoading(false); }
+  }, []);
 
-  // ── Monthly target (persisted in localStorage) ───────────────
   const [target, setTarget] = useState(() => Number(localStorage.getItem('tv_target') || 15000));
   const saveTarget = (v) => { setTarget(v); localStorage.setItem('tv_target', v); };
 
-  // ── Modal states ─────────────────────────────────────────────
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -81,7 +69,6 @@ export default function AppLayout() {
   const [targetInput, setTargetInput] = useState(target);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // ── Computed calcs (memoized) ─────────────────────────────────
   const calcs = useMemo(() => {
     const m = {};
     students.forEach((s) => { m[s._id] = calcStudent(s, payments); });
@@ -93,13 +80,11 @@ export default function AppLayout() {
     [students, calcs]
   );
 
-  // ── Push data to child pages ──────────────────────────────────
   useEffect(() => {
     pushAppData({
       students, payments, calcs, target, liveRate,
       overdueStudents,
       loading: studentsLoading || paymentsLoading,
-      // actions
       onEditStudent: (s) => { setEditStudent(s); setShowStudentModal(true); },
       onDeleteStudent: (s) => setDeleteConfirm(s),
       onAddPaymentFor: (s) => { setPreStudent(s); setShowPaymentModal(true); },
@@ -111,7 +96,6 @@ export default function AppLayout() {
     });
   }, [students, payments, calcs, target, liveRate, overdueStudents, studentsLoading, paymentsLoading]);
 
-  // ── CSV Export ────────────────────────────────────────────────
   const exportCSV = () => {
     const headers = ['Name','Email','Phone','Date','Region','Program','University','Total Fee','Received','Outstanding','Net Profit USD','Status'];
     const rows = students.map((s) => {
@@ -128,7 +112,6 @@ export default function AppLayout() {
     showToast('CSV exported!', 'info');
   };
 
-  // ── Handlers ──────────────────────────────────────────────────
   const handleAddStudent = () => { setEditStudent(null); setShowStudentModal(true); };
   const handleAddPayment = () => { setPreStudent(null); setShowPaymentModal(true); };
 
@@ -172,7 +155,8 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 40%, #f0f9ff 70%, #fdf4ff 100%)", minHeight: "100vh" }}>
+    /* ── FIXED: solid warm beige — no more 4-color gradient ── */
+    <div className="min-h-screen flex" style={{ background: '#FAFAF9', minHeight: '100vh' }}>
       <Sidebar
         overdueCount={overdueStudents.length}
         onAddStudent={handleAddStudent}
@@ -181,13 +165,17 @@ export default function AppLayout() {
         onExportCSV={exportCSV}
       />
 
-      {/* Main content */}
-      <div className="ml-60 flex-1 flex flex-col" style={{ height: "100vh", overflow: "hidden" }}>
-        <Topbar liveRate={liveRate} rateLoading={rateLoading} onRefreshRate={fetchRate}>
-          {/* Topbar action buttons injected by page via context — handled in pages directly */}
-        </Topbar>
+      <div className="ml-60 flex-1 flex flex-col" style={{ height: '100vh', overflow: 'hidden' }}>
+        <Topbar
+          liveRate={liveRate}
+          rateLoading={rateLoading}
+          onRefreshRate={fetchRate}
+          students={students}
+          payments={payments}
+          calcs={calcs}
+        />
 
-        <main className="flex-1 p-6 overflow-y-auto" style={{ height: "calc(100vh - 57px)" }}>
+        <main className="flex-1 p-6 overflow-y-auto" style={{ height: 'calc(100vh - 57px)' }}>
           <Outlet />
         </main>
       </div>
@@ -214,55 +202,68 @@ export default function AppLayout() {
         />
       )}
 
-      {/* Target Modal */}
+      {/* Target Modal — warm neutral theme */}
       {showTargetModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(15,23,42,0.4)' }}
+          style={{ backgroundColor: 'rgba(28,25,23,0.45)' }}
           onClick={() => setShowTargetModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6"
+            className="bg-white rounded-2xl w-full max-w-sm p-6"
+            style={{ border: '1px solid #E7E4E0', boxShadow: '0 8px 32px rgba(28,25,23,0.14)' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-base font-semibold text-slate-800 mb-4">🎯 Monthly Target (USD)</h2>
+            <h2 className="text-sm font-bold text-stone-800 mb-1">Monthly Target</h2>
+            <p className="text-xs text-stone-400 mb-4">Set your USD collection goal for this month</p>
+
             <div className="mb-4">
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-                Target Amount
+              <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-1.5">
+                Target Amount (USD)
               </label>
               <input
                 type="number"
                 value={targetInput}
                 onChange={(e) => setTargetInput(Number(e.target.value))}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-800
-                  bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                className="w-full border rounded-lg px-3 py-2.5 text-sm font-semibold text-stone-800 focus:outline-none"
+                style={{
+                  background: '#F5F3F0',
+                  border: '1px solid #D6D3D1',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
                 placeholder="e.g. 15000"
               />
               {liveRate && (
-                <p className="text-xs text-slate-400 mt-1.5">
+                <p className="text-xs text-stone-400 mt-1.5">
                   ≈ ₹{Math.round(targetInput * liveRate).toLocaleString('en-IN')} at live rate
                 </p>
               )}
             </div>
+
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowTargetModal(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                style={{ color: '#78716C', background: '#EAE8E4' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#E0DDD9'}
+                onMouseLeave={e => e.currentTarget.style.background = '#EAE8E4'}
               >
                 Cancel
               </button>
               <button
                 onClick={() => { saveTarget(targetInput); setShowTargetModal(false); showToast('Target saved!', 'info'); }}
-                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
+                style={{ background: '#1C1917' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#292524'}
+                onMouseLeave={e => e.currentTarget.style.background = '#1C1917'}
               >
-                Save
+                Save Target
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirm */}
       <ConfirmDialog
         open={!!deleteConfirm}
         title="Delete Student?"

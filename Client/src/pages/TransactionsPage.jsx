@@ -1,13 +1,70 @@
 import { useMemo, useState } from 'react';
 import { useAppData } from '../components/layout/AppLayout';
-import { fmt$, fmtDate, fmtINR, METHOD_ICON } from '../utils/formatters';
+import { fmt$, fmtDate, fmtINR } from '../utils/formatters';
 
-const METHOD_COLORS = {
-  'Bank Transfer': 'bg-indigo-100 text-indigo-700',
-  UPI:             'bg-emerald-100 text-emerald-700',
-  PayPal:          'bg-amber-100 text-amber-700',
-  EMI:             'bg-purple-100 text-purple-700',
-  Other:           'bg-slate-100 text-slate-600',
+// Warm neutral palette — matches sidebar/body
+const T = {
+  bg:        '#F5F3F0',
+  border:    '#E7E4E0',
+  borderLight: '#F0EDE9',
+  text:      '#1C1917',
+  label:     '#A8A29E',
+  sub:       '#78716C',
+  card:      '#ffffff',
+  inputBg:   '#F5F3F0',
+  hoverBg:   '#F8F6F4',
+  primary:   '#1C1917',
+  avatarBg:  '#EDEAE6',
+  avatarText: '#57534E',
+  positive:  '#10B981',
+  negative:  '#EF4444',
+};
+
+// Method badge — semantic warm tones, no Tailwind color classes
+const METHOD_STYLE = {
+  'Bank Transfer': { bg: '#EEF2FF', color: '#4338CA' },
+  'UPI':           { bg: '#ECFDF5', color: '#065F46' },
+  'PayPal':        { bg: '#FFFBEB', color: '#92400E' },
+  'EMI':           { bg: '#F5F3FF', color: '#5B21B6' },
+  'Other':         { bg: '#F5F3F0', color: '#57534E' },
+};
+
+// Method SVG icons — no emoji
+const METHOD_ICON_SVG = {
+  'Bank Transfer': (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/>
+      <line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/>
+      <line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>
+    </svg>
+  ),
+  'UPI': (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+    </svg>
+  ),
+  'PayPal': (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>
+    </svg>
+  ),
+  'EMI': (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+  ),
+};
+const DefaultMethodIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  </svg>
+);
+
+// Summary card accent colors — semantic, not decorative
+const SUMMARY_ACCENT = {
+  gross:      '#1C1917',  // neutral dark
+  net:        '#10B981',  // emerald — positive
+  deductions: '#EF4444',  // red — alert
 };
 
 export default function TransactionsPage() {
@@ -15,35 +72,24 @@ export default function TransactionsPage() {
 
   const [search, setSearch]       = useState('');
   const [methodFilter, setMethod] = useState('All');
-  const [sortDir, setSortDir]     = useState('desc'); // desc = latest first
+  const [sortDir, setSortDir]     = useState('desc');
 
-  // Enrich payments with student info
   const enriched = useMemo(() => {
     return payments.map((p) => {
-      const student = students.find(
-        (s) => s._id === (p.studentId?._id || p.studentId)
-      );
-      const net =
-        p.amountUSD -
-        (p.bankCharge || 0) -
-        (p.gatewayFee || 0) -
-        (p.otherDeduction || 0);
-      const deductions =
-        (p.bankCharge || 0) + (p.gatewayFee || 0) + (p.otherDeduction || 0);
+      const student = students.find((s) => s._id === (p.studentId?._id || p.studentId));
+      const net = p.amountUSD - (p.bankCharge || 0) - (p.gatewayFee || 0) - (p.otherDeduction || 0);
+      const deductions = (p.bankCharge || 0) + (p.gatewayFee || 0) + (p.otherDeduction || 0);
       return { ...p, student, net, deductions };
     });
   }, [payments, students]);
 
-  // Unique methods for filter
   const methods = useMemo(() => {
     const s = new Set(payments.map((p) => p.method || 'Other'));
     return ['All', ...Array.from(s).sort()];
   }, [payments]);
 
-  // Filter + sort
   const filtered = useMemo(() => {
     let list = [...enriched];
-
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -53,20 +99,16 @@ export default function TransactionsPage() {
           p.note?.toLowerCase().includes(q)
       );
     }
-
     if (methodFilter !== 'All') {
       list = list.filter((p) => (p.method || 'Other') === methodFilter);
     }
-
     list.sort((a, b) => {
       const diff = new Date(a.date) - new Date(b.date);
       return sortDir === 'desc' ? -diff : diff;
     });
-
     return list;
   }, [enriched, search, methodFilter, sortDir]);
 
-  // Totals for filtered
   const totals = useMemo(() => ({
     gross: filtered.reduce((a, p) => a + p.amountUSD, 0),
     net:   filtered.reduce((a, p) => a + p.net, 0),
@@ -75,77 +117,125 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+        <div
+          style={{
+            width: '28px', height: '28px', borderRadius: '50%',
+            border: `2px solid ${T.primary}`, borderTopColor: 'transparent',
+            animation: 'spin 0.7s linear infinite',
+          }}
+        />
       </div>
     );
   }
 
   return (
-    <div>
-      {/* ── Header ─────────────────────────────── */}
-      <div className="flex items-center justify-between mb-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+      {/* ── Header ───────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 className="text-lg font-bold text-slate-800">All Transactions</h1>
-          <p className="text-xs text-slate-400 mt-0.5">{filtered.length} of {payments.length} payments</p>
+          <h1 style={{ fontSize: '15px', fontWeight: 800, color: T.text, margin: 0, letterSpacing: '-0.02em' }}>
+            All Transactions
+          </h1>
+          <p style={{ fontSize: '11px', color: T.label, marginTop: '2px' }}>
+            {filtered.length} of {payments.length} payments
+          </p>
         </div>
 
         {/* Sort toggle */}
         <button
           onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-white border border-slate-200
-            px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            fontSize: '12px', fontWeight: 600, color: T.sub,
+            background: T.card, border: `1px solid ${T.border}`,
+            padding: '7px 12px', borderRadius: '10px', cursor: 'pointer',
+            fontFamily: 'inherit', transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = T.bg}
+          onMouseLeave={e => e.currentTarget.style.background = T.card}
         >
           {sortDir === 'desc' ? '↓ Newest first' : '↑ Oldest first'}
         </button>
       </div>
 
-      {/* ── Summary cards ──────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-5">
+      {/* ── Summary cards ───────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
         {[
-          { label: 'Total Gross',      value: fmt$(totals.gross),      sub: liveRate ? fmtINR(totals.gross * liveRate) : '—',      color: 'from-indigo-500 to-violet-500', tc: 'text-indigo-700' },
-          { label: 'Total Net',        value: fmt$(totals.net),        sub: liveRate ? fmtINR(totals.net * liveRate) : '—',        color: 'from-emerald-400 to-green-500', tc: 'text-emerald-700' },
-          { label: 'Total Deductions', value: fmt$(totals.deductions), sub: `${filtered.length} transactions`,                    color: 'from-red-400 to-rose-500',       tc: 'text-red-600' },
+          { key: 'gross',      label: 'Total Gross',      value: fmt$(totals.gross),      sub: liveRate ? fmtINR(totals.gross * liveRate) : '—',      valueColor: T.text },
+          { key: 'net',        label: 'Total Net',        value: fmt$(totals.net),        sub: liveRate ? fmtINR(totals.net * liveRate) : '—',        valueColor: SUMMARY_ACCENT.net },
+          { key: 'deductions', label: 'Total Deductions', value: fmt$(totals.deductions), sub: `${filtered.length} transactions`,                      valueColor: SUMMARY_ACCENT.deductions },
         ].map((c) => (
-          <div key={c.label} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className={`h-0.5 w-full bg-gradient-to-r ${c.color}`} />
-            <div className="p-4">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">{c.label}</p>
-              <p className={`text-xl font-bold ${c.tc}`}>{c.value}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">{c.sub}</p>
+          <div
+            key={c.key}
+            style={{
+              background: T.card, borderRadius: '14px',
+              border: `1px solid ${T.border}`, overflow: 'hidden',
+            }}
+          >
+            {/* Thin semantic accent top */}
+            <div style={{ height: '3px', background: SUMMARY_ACCENT[c.key] }} />
+            <div style={{ padding: '16px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                {c.label}
+              </p>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: c.valueColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', margin: 0 }}>
+                {c.value}
+              </p>
+              <p style={{ fontSize: '11px', color: T.label, marginTop: '2px' }}>{c.sub}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Filters ────────────────────────────── */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* ── Filters ─────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            flex: 1, minWidth: '180px', maxWidth: '280px',
+            background: T.inputBg, border: `1px solid ${T.border}`,
+            borderRadius: '10px', padding: '8px 12px',
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.label} strokeWidth="2.5">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input
             type="text"
-            placeholder="Search student, method..."
+            placeholder="Search student, method…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg bg-white
-              focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+            style={{
+              background: 'transparent', border: 'none', outline: 'none',
+              fontSize: '13px', color: T.text, width: '100%', fontFamily: 'inherit',
+            }}
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.label, fontSize: '12px', padding: 0 }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Method filter pills */}
-        <div className="flex items-center gap-1.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           {methods.map((m) => (
             <button
               key={m}
               onClick={() => setMethod(m)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-                methodFilter === m
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
-              }`}
+              style={{
+                fontSize: '11px', fontWeight: 600, padding: '6px 12px', borderRadius: '8px',
+                border: `1px solid ${methodFilter === m ? T.primary : T.border}`,
+                background: methodFilter === m ? T.primary : T.card,
+                color: methodFilter === m ? '#ffffff' : T.sub,
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+              }}
             >
               {m}
             </button>
@@ -153,83 +243,163 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {/* ── Transactions table ─────────────────── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* ── Transactions table ───────────────────── */}
+      <div
+        style={{
+          background: T.card, borderRadius: '14px',
+          border: `1px solid ${T.border}`, overflow: 'hidden',
+        }}
+      >
         {filtered.length === 0 ? (
-          <div className="py-16 text-center text-slate-400">
-            <p className="text-3xl mb-2">💸</p>
-            <p className="text-sm font-medium">No transactions found</p>
+          <div style={{ padding: '64px 0', textAlign: 'center' }}>
+            <div
+              style={{
+                width: '40px', height: '40px', borderRadius: '12px', background: T.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 12px',
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.label} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: T.sub }}>No transactions found</p>
+            <p style={{ fontSize: '11px', color: T.label, marginTop: '2px' }}>Try adjusting your filters</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div>
             {/* Table header */}
-            <div className="grid grid-cols-[2fr_1.2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-3 bg-slate-50">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1.2fr 1fr 1fr 1fr 1fr',
+                gap: '16px', padding: '10px 20px',
+                background: T.bg, borderBottom: `1px solid ${T.border}`,
+              }}
+            >
               {['Student', 'Date & Method', 'Gross', 'Deductions', 'Net', 'Note'].map((h) => (
-                <p key={h} className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{h}</p>
+                <p
+                  key={h}
+                  style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}
+                >
+                  {h}
+                </p>
               ))}
             </div>
 
             {/* Rows */}
-            {filtered.map((p) => (
-              <div
-                key={p._id}
-                className="grid grid-cols-[2fr_1.2fr_1fr_1fr_1fr_1fr] gap-4 px-5 py-3.5 hover:bg-slate-50
-                  transition-colors items-center"
-              >
-                {/* Student */}
+            {filtered.map((p, i) => {
+              const mStyle = METHOD_STYLE[p.method] || METHOD_STYLE.Other;
+              const MIcon = METHOD_ICON_SVG[p.method] ? (() => METHOD_ICON_SVG[p.method]) : DefaultMethodIcon;
+              const initials = (p.student?.name?.[0] || '?').toUpperCase();
+
+              return (
                 <div
-                  className="flex items-center gap-2.5 cursor-pointer group"
-                  onClick={() => p.student && onViewStudent(p.student)}
+                  key={p._id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2fr 1.2fr 1fr 1fr 1fr 1fr',
+                    gap: '16px', padding: '13px 20px',
+                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.borderLight}` : 'none',
+                    alignItems: 'center', transition: 'background 0.12s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.hoverBg}
+                  onMouseLeave={e => e.currentTarget.style.background = ''}
                 >
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center
-                    text-xs font-bold text-indigo-600 flex-shrink-0">
-                    {(p.student?.name?.[0] || '?').toUpperCase()}
+                  {/* Student */}
+                  <div
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: p.student ? 'pointer' : 'default' }}
+                    onClick={() => p.student && onViewStudent(p.student)}
+                  >
+                    <div
+                      style={{
+                        width: '32px', height: '32px', borderRadius: '50%',
+                        background: T.avatarBg, color: T.avatarText,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '11px', fontWeight: 700, flexShrink: 0,
+                      }}
+                    >
+                      {initials}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p
+                        style={{
+                          fontSize: '13px', fontWeight: 600, color: T.text,
+                          margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          transition: 'color 0.12s',
+                        }}
+                        onMouseEnter={e => { if (p.student) e.target.style.color = '#1C1917'; }}
+                      >
+                        {p.student?.name || '—'}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: '11px', color: T.label, margin: 0,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {p.student?.university || ''}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
-                      {p.student?.name || '—'}
+
+                  {/* Date & Method */}
+                  <div>
+                    <p style={{ fontSize: '12px', color: T.sub, margin: '0 0 3px 0' }}>{fmtDate(p.date)}</p>
+                    <span
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        fontSize: '10px', fontWeight: 600, padding: '2px 7px',
+                        borderRadius: '99px', background: mStyle.bg, color: mStyle.color,
+                      }}
+                    >
+                      <MIcon />
+                      {p.method || 'Other'}
+                    </span>
+                  </div>
+
+                  {/* Gross */}
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: T.text, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                      {fmt$(p.amountUSD)}
                     </p>
-                    <p className="text-[11px] text-slate-400 truncate">{p.student?.university || ''}</p>
+                    {p.exchangeRate && (
+                      <p style={{ fontSize: '10px', color: T.label, margin: 0 }}>₹{p.exchangeRate}/USD</p>
+                    )}
                   </div>
+
+                  {/* Deductions */}
+                  <div>
+                    {p.deductions > 0 ? (
+                      <>
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: T.negative, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                          -{fmt$(p.deductions)}
+                        </p>
+                        <p style={{ fontSize: '10px', color: T.label, margin: 0 }}>charges</p>
+                      </>
+                    ) : (
+                      <p style={{ fontSize: '13px', color: T.border, margin: 0 }}>—</p>
+                    )}
+                  </div>
+
+                  {/* Net */}
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: T.positive, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt$(p.net)}
+                  </p>
+
+                  {/* Note */}
+                  <p
+                    style={{
+                      fontSize: '11px', color: T.label, margin: 0,
+                      fontStyle: p.note ? 'italic' : 'normal',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {p.note ? `"${p.note}"` : '—'}
+                  </p>
                 </div>
-
-                {/* Date & Method */}
-                <div>
-                  <p className="text-sm text-slate-600">{fmtDate(p.date)}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${METHOD_COLORS[p.method] || METHOD_COLORS.Other}`}>
-                    {METHOD_ICON[p.method] || '💵'} {p.method || 'Other'}
-                  </span>
-                </div>
-
-                {/* Gross */}
-                <div>
-                  <p className="text-sm font-bold text-slate-800">{fmt$(p.amountUSD)}</p>
-                  {p.exchangeRate && (
-                    <p className="text-[11px] text-slate-400">₹{p.exchangeRate}/USD</p>
-                  )}
-                </div>
-
-                {/* Deductions */}
-                <div>
-                  {p.deductions > 0 ? (
-                    <>
-                      <p className="text-sm font-semibold text-red-500">-{fmt$(p.deductions)}</p>
-                      <p className="text-[11px] text-slate-400">charges</p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-slate-300">—</p>
-                  )}
-                </div>
-
-                {/* Net */}
-                <p className="text-sm font-bold text-emerald-600">{fmt$(p.net)}</p>
-
-                {/* Note */}
-                <p className="text-xs text-slate-400 truncate italic">
-                  {p.note ? `"${p.note}"` : '—'}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

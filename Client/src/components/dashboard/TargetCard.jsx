@@ -1,87 +1,115 @@
 import { fmt$, fmtINR } from '../../utils/formatters';
 
-/**
- * Props:
- *   thisMonth — number (USD collected this month)
- *   target    — number (monthly target USD)
- *   tPct      — number 0-100
- *   liveRate  — number | null
- */
+const T = {
+  border:  '#E7E4E0',
+  label:   '#A8A29E',
+  sub:     '#78716C',
+  text:    '#1C1917',
+  iconBg:  '#EDEAE6',
+  trackBg: '#EAE8E4',
+};
+
+// Progress bar color — semantic, no gradient
+function barColor(pct) {
+  if (pct >= 100) return '#10B981'; // emerald
+  if (pct >= 60)  return '#1C1917'; // dark — strong progress
+  if (pct >= 30)  return '#F59E0B'; // amber — mid
+  return '#EF4444';                  // red — low
+}
+
+function pctColor(pct) {
+  if (pct >= 100) return '#10B981';
+  if (pct >= 60)  return '#1C1917';
+  if (pct >= 30)  return '#F59E0B';
+  return '#EF4444';
+}
+
 export default function TargetCard({ thisMonth, target, tPct, liveRate }) {
   const remaining = Math.max(0, target - thisMonth);
-
-  const barColor =
-    tPct >= 100
-      ? 'from-emerald-400 to-green-500'
-      : tPct >= 60
-      ? 'from-indigo-400 to-violet-500'
-      : tPct >= 30
-      ? 'from-amber-400 to-orange-500'
-      : 'from-red-400 to-rose-500';
-
-  const labelColor =
-    tPct >= 100
-      ? 'text-emerald-600'
-      : tPct >= 60
-      ? 'text-indigo-600'
-      : tPct >= 30
-      ? 'text-amber-600'
-      : 'text-red-500';
+  const achieved  = tPct >= 100;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+    <div
+      className="bg-white rounded-xl p-5"
+      style={{ border: `1px solid ${T.border}` }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: T.iconBg }}
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="#6366f1" strokeWidth="2">
+              stroke="#57534E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <circle cx="12" cy="12" r="6"/>
               <circle cx="12" cy="12" r="2"/>
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-800">Monthly Target</p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-sm font-semibold" style={{ color: T.text }}>Monthly Target</p>
+            <p className="text-[11px]" style={{ color: T.label }}>
               {new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' })}
             </p>
           </div>
         </div>
-        <span className={`text-sm font-bold ${labelColor}`}>
+        <span
+          className="text-sm font-bold tabular-nums"
+          style={{ color: pctColor(tPct) }}
+        >
           {tPct.toFixed(0)}%
         </span>
       </div>
 
-      {/* Big number */}
-      <p className="text-2xl font-bold text-slate-800 mb-0.5">
+      {/* Amount */}
+      <p
+        className="text-2xl font-bold mb-0.5"
+        style={{ color: T.text, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}
+      >
         {fmt$(thisMonth)}
-        <span className="text-sm font-normal text-slate-400 ml-1">/ {fmt$(target)}</span>
+        <span className="text-sm font-normal ml-1.5" style={{ color: T.label }}>
+          / {fmt$(target)}
+        </span>
       </p>
+
       {liveRate && (
-        <p className="text-xs text-slate-400 mb-3">
+        <p className="text-xs mb-3" style={{ color: T.label }}>
           ≈ {fmtINR(thisMonth * liveRate)} collected this month
         </p>
       )}
 
-      {/* Progress bar */}
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
+      {/* Progress bar — solid color, no gradient */}
+      <div
+        className="h-1.5 rounded-full overflow-hidden mb-3"
+        style={{ background: T.trackBg }}
+      >
         <div
-          className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700`}
-          style={{ width: `${tPct}%` }}
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${Math.min(tPct, 100)}%`, background: barColor(tPct) }}
         />
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs">
-        {tPct >= 100 ? (
-          <span className="font-semibold text-emerald-600">🎉 Target achieved!</span>
+      <div className="flex items-center justify-between">
+        {achieved ? (
+          <div className="flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span className="text-xs font-semibold" style={{ color: '#10B981' }}>
+              Target achieved
+            </span>
+          </div>
         ) : (
-          <span className="text-slate-500">
-            <span className="font-semibold text-slate-700">{fmt$(remaining)}</span> remaining
+          <span className="text-xs" style={{ color: T.sub }}>
+            <span className="font-semibold" style={{ color: T.text }}>
+              {fmt$(remaining)}
+            </span>{' '}remaining
           </span>
         )}
-        <span className="text-slate-400">Target: {fmt$(target)}</span>
+        <span className="text-xs" style={{ color: T.label }}>Goal: {fmt$(target)}</span>
       </div>
     </div>
   );

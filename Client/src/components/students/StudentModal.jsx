@@ -11,7 +11,6 @@ const EMPTY = {
   initBankCharge: '', initGatewayFee: '', initOtherDed: '',
 };
 
-// All world countries
 const REGIONS = [
   'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia',
   'Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin',
@@ -37,49 +36,63 @@ const REGIONS = [
   'Vietnam','Yemen','Zambia','Zimbabwe',
 ];
 const PROGRAMS = [
-  'PhD Programs',
-  'DBA Programs',
-  'EdD Programs',
-  'Honorary Doctorate',
-  'Honorary Professorship',
-  'Executive Education',
-  'Certification Programs',
+  'PhD Programs','DBA Programs','EdD Programs','Honorary Doctorate',
+  'Honorary Professorship','Executive Education','Certification Programs',
 ];
-const METHODS  = ['Bank Transfer', 'UPI', 'PayPal', 'EMI'];
-const JOURNEY_STAGES = ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni', 'Ghost', 'Refund', 'Admission Cancelled'];
+const METHODS = ['Bank Transfer', 'UPI', 'PayPal', 'EMI'];
+const JOURNEY_STAGES = ['Admission','Activation','Learning','Research','Submission','Conferment','Alumni','Ghost','Refund','Admission Cancelled'];
 
-const inputStyle = {
-  border: '1px solid #e2e8f0',
+// ── Warm neutral design tokens ────────────────────────────────────────────────
+const T = {
+  inputBg:      '#F5F3F0',
+  inputBorder:  '#D9D5D0',
+  inputFocusBorder: '#1C1917',
+  inputFocusShadow: '0 0 0 3px rgba(28,25,23,0.08)',
+  inputText:    '#1C1917',
+  sectionBg:    '#FAFAF9',
+  sectionBorder:'#E7E4E0',
+  labelColor:   '#A8A29E',
+  divider:      '#E7E4E0',
+  cancelBg:     '#EAE8E4',
+  cancelText:   '#78716C',
+  saveBg:       '#1C1917',
+  saveHover:    '#292524',
+};
+
+const inputBase = {
+  border: `1px solid ${T.inputBorder}`,
   borderRadius: '10px',
   padding: '9px 12px',
   fontSize: '13px',
-  color: '#1e293b',
-  background: '#f8fafc',
+  color: T.inputText,
+  background: T.inputBg,
   outline: 'none',
   width: '100%',
-  transition: 'all 0.15s',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
   fontFamily: 'inherit',
 };
 
+// ── Field wrapper ─────────────────────────────────────────────────────────────
 function Field({ label, error, children }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      <label style={{ fontSize: '10px', fontWeight: 700, color: T.labelColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
         {label}
       </label>
       {children}
-      {error && <p style={{ fontSize: '11px', color: '#ef4444' }}>{error}</p>}
+      {error && <p style={{ fontSize: '11px', color: '#EF4444' }}>{error}</p>}
     </div>
   );
 }
 
-function StyledInput({ className = '', style = {}, ...props }) {
+// ── Input ─────────────────────────────────────────────────────────────────────
+function StyledInput({ style = {}, ...props }) {
   const [focused, setFocused] = useState(false);
   return (
     <input
       style={{
-        ...inputStyle,
-        ...(focused ? { background: 'white', borderColor: '#6366f1', boxShadow: '0 0 0 3px rgba(99,102,241,0.12)' } : {}),
+        ...inputBase,
+        ...(focused ? { borderColor: T.inputFocusBorder, boxShadow: T.inputFocusShadow, background: '#fff' } : {}),
         ...style,
       }}
       onFocus={() => setFocused(true)}
@@ -89,14 +102,15 @@ function StyledInput({ className = '', style = {}, ...props }) {
   );
 }
 
+// ── Select ────────────────────────────────────────────────────────────────────
 function StyledSelect({ children, style = {}, ...props }) {
   const [focused, setFocused] = useState(false);
   return (
     <select
       style={{
-        ...inputStyle,
+        ...inputBase,
         cursor: 'pointer',
-        ...(focused ? { background: 'white', borderColor: '#6366f1', boxShadow: '0 0 0 3px rgba(99,102,241,0.12)' } : {}),
+        ...(focused ? { borderColor: T.inputFocusBorder, boxShadow: T.inputFocusShadow, background: '#fff' } : {}),
         ...style,
       }}
       onFocus={() => setFocused(true)}
@@ -108,12 +122,29 @@ function StyledSelect({ children, style = {}, ...props }) {
   );
 }
 
-// ── SearchableCountry ────────────────────────────────────────────────────────
+// ── Section label ─────────────────────────────────────────────────────────────
+function SectionLabel({ icon, children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
+      <div style={{
+        width: '22px', height: '22px', borderRadius: '6px',
+        background: '#EAE8E4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#57534E', flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <p style={{ fontSize: '10px', fontWeight: 800, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+// ── SearchableCountry ─────────────────────────────────────────────────────────
 function SearchableCountry({ value, onChange, error }) {
-  const [query, setQuery]       = useState('');
-  const [open, setOpen]         = useState(false);
-  const [focused, setFocused]   = useState(false);
-  const wrapRef                 = useState(null);
+  const [query, setQuery] = useState('');
+  const [open, setOpen]   = useState(false);
+  const [focused, setFocused] = useState(false);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return REGIONS;
@@ -121,28 +152,24 @@ function SearchableCountry({ value, onChange, error }) {
     return REGIONS.filter(c => c.toLowerCase().includes(q));
   }, [query]);
 
-  const select = (country) => {
-    onChange(country);
-    setQuery('');
-    setOpen(false);
-  };
+  const select = (country) => { onChange(country); setQuery(''); setOpen(false); };
 
   return (
     <div style={{ position: 'relative' }}>
-      <div style={{
-        ...inputStyle,
-        display: 'flex', alignItems: 'center', gap: '6px',
-        cursor: 'text', padding: '0',
-        ...(focused ? { background: 'white', borderColor: '#6366f1', boxShadow: '0 0 0 3px rgba(99,102,241,0.12)' } : {}),
-        ...(error ? { borderColor: '#ef4444' } : {}),
-      }}
-        onClick={() => { setOpen(true); }}
+      <div
+        style={{
+          ...inputBase,
+          display: 'flex', alignItems: 'center', padding: 0, cursor: 'text',
+          ...(focused ? { borderColor: T.inputFocusBorder, boxShadow: T.inputFocusShadow, background: '#fff' } : {}),
+          ...(error ? { borderColor: '#EF4444' } : {}),
+        }}
+        onClick={() => setOpen(true)}
       >
         {value && !open ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '9px 12px' }}>
-            <span style={{ fontSize: '13px', color: '#1e293b', fontWeight: 500 }}>{value}</span>
+            <span style={{ fontSize: '13px', color: T.inputText, fontWeight: 500 }}>{value}</span>
             <button type="button" onClick={e => { e.stopPropagation(); onChange(''); setQuery(''); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '14px', padding: '0', lineHeight: 1 }}>✕</button>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.labelColor, fontSize: '14px', padding: 0, lineHeight: 1 }}>✕</button>
           </div>
         ) : (
           <input
@@ -151,68 +178,53 @@ function SearchableCountry({ value, onChange, error }) {
             onFocus={() => { setFocused(true); setOpen(true); }}
             onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150); }}
             placeholder={value || 'Search country…'}
-            style={{ background: 'transparent', border: 'none', outline: 'none', width: '100%', fontSize: '13px', color: '#1e293b', fontFamily: 'inherit', padding: '9px 12px' }}
+            style={{ background: 'transparent', border: 'none', outline: 'none', width: '100%', fontSize: '13px', color: T.inputText, fontFamily: 'inherit', padding: '9px 12px' }}
           />
         )}
       </div>
-
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 999,
-          background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto',
+          background: 'white', border: `1px solid ${T.sectionBorder}`, borderRadius: '10px',
+          boxShadow: '0 8px 24px rgba(28,25,23,0.12)', maxHeight: '200px', overflowY: 'auto',
         }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: '12px', fontSize: '12px', color: '#94a3b8', textAlign: 'center' }}>No country found</div>
-          ) : (
-            filtered.map(country => (
-              <div key={country}
-                onMouseDown={() => select(country)}
-                style={{
-                  padding: '8px 12px', fontSize: '13px', cursor: 'pointer',
-                  color: country === value ? '#6366f1' : '#1e293b',
-                  fontWeight: country === value ? 700 : 400,
-                  background: country === value ? 'rgba(99,102,241,0.06)' : 'transparent',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
-                onMouseLeave={e => e.currentTarget.style.background = country === value ? 'rgba(99,102,241,0.06)' : 'transparent'}
-              >
-                {country}
-              </div>
-            ))
-          )}
+            <div style={{ padding: '12px', fontSize: '12px', color: T.labelColor, textAlign: 'center' }}>No country found</div>
+          ) : filtered.map(country => (
+            <div key={country}
+              onMouseDown={() => select(country)}
+              style={{
+                padding: '8px 12px', fontSize: '13px', cursor: 'pointer',
+                color: country === value ? T.inputText : '#57534E',
+                fontWeight: country === value ? 700 : 400,
+                background: country === value ? '#EAE8E4' : 'transparent',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#F0EDE9'}
+              onMouseLeave={e => e.currentTarget.style.background = country === value ? '#EAE8E4' : 'transparent'}
+            >
+              {country}
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
-// ────────────────────────────────────────────────────────────────────────────
 
-// ── NEW: SelectWithOther ─────────────────────────────────────────────────────
-// Jab "Other" select ho → ek custom text input slide in ho jaata hai
+// ── SelectWithOther ───────────────────────────────────────────────────────────
 function SelectWithOther({ value, onChange, options, placeholder, inputPlaceholder = 'Type custom value...' }) {
-  // Agar edit mode mein value standard options mein nahi hai → automatically "Other" mode
   const isCustomValue = value !== '' && !options.includes(value);
   const [otherMode, setOtherMode] = useState(isCustomValue);
 
-  // Edit mode: jab initial value load ho (useEffect from parent) → sync karo
   useEffect(() => {
-    if (value !== '' && !options.includes(value)) {
-      setOtherMode(true);
-    }
-  }, []); // only on mount
+    if (value !== '' && !options.includes(value)) setOtherMode(true);
+  }, []);
 
-  // Dropdown mein kya dikhao
   const dropdownValue = otherMode ? '__other__' : (value || '');
 
   const handleDropdown = (e) => {
-    if (e.target.value === '__other__') {
-      setOtherMode(true);
-      onChange(''); // custom input blank se shuru
-    } else {
-      setOtherMode(false);
-      onChange(e.target.value);
-    }
+    if (e.target.value === '__other__') { setOtherMode(true); onChange(''); }
+    else { setOtherMode(false); onChange(e.target.value); }
   };
 
   return (
@@ -222,131 +234,90 @@ function SelectWithOther({ value, onChange, options, placeholder, inputPlacehold
         {options.map(o => <option key={o} value={o}>{o}</option>)}
         <option value="__other__">Other</option>
       </StyledSelect>
-
-      {/* Custom input — smoothly appear karta hai */}
       {otherMode && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          animation: 'slideDown 0.18s ease-out',
-        }}>
-          <StyledInput
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={inputPlaceholder}
-            autoFocus
-            style={{ flex: 1 }}
-          />
-          {/* X button — wapas dropdown pe jaao */}
-          <button
-            type="button"
-            onClick={() => { setOtherMode(false); onChange(''); }}
-            title="Cancel custom"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', animation: 'slideDown 0.18s ease-out' }}>
+          <StyledInput value={value} onChange={e => onChange(e.target.value)} placeholder={inputPlaceholder} autoFocus style={{ flex: 1 }} />
+          <button type="button" onClick={() => { setOtherMode(false); onChange(''); }}
             style={{
-              flexShrink: 0,
-              width: '30px', height: '30px',
-              borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              background: '#f8fafc',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '14px', fontWeight: 700,
-              transition: 'all 0.15s',
+              flexShrink: 0, width: '30px', height: '30px', borderRadius: '8px',
+              border: `1px solid ${T.inputBorder}`, background: T.inputBg, color: T.labelColor,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '13px', fontWeight: 700, transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = '#fca5a5'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
-          >
-            ✕
-          </button>
+            onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.borderColor = '#FCA5A5'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = T.inputBg; e.currentTarget.style.color = T.labelColor; e.currentTarget.style.borderColor = T.inputBorder; }}
+          >✕</button>
         </div>
       )}
     </div>
   );
 }
-// ────────────────────────────────────────────────────────────────────────────
 
-// ── Stage Colors ─────────────────────────────────────────────────────────────
+// ── Stage colors ──────────────────────────────────────────────────────────────
 const STAGE_COLORS = {
-  'Admission':   { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', dot: '#3b82f6' },
-  'Activation':  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', dot: '#22c55e' },
-  'Learning':    { bg: '#fefce8', border: '#fde68a', text: '#a16207', dot: '#eab308' },
-  'Research':    { bg: '#fdf4ff', border: '#e9d5ff', text: '#7e22ce', dot: '#a855f7' },
-  'Submission':  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c', dot: '#f97316' },
-  'Conferment':  { bg: '#f0fdfa', border: '#99f6e4', text: '#0f766e', dot: '#14b8a6' },
-  'Alumni':             { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#f43f5e' },
-  'Ghost':              { bg: '#f8fafc', border: '#cbd5e1', text: '#475569', dot: '#94a3b8' },
-  'Refund':             { bg: '#fef2f2', border: '#fecaca', text: '#991b1b', dot: '#ef4444' },
-  'Admission Cancelled':{ bg: '#f1f5f9', border: '#cbd5e1', text: '#334155', dot: '#475569' },
+  'Admission':           { bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8', dot: '#3B82F6' },
+  'Activation':          { bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D', dot: '#22C55E' },
+  'Learning':            { bg: '#FEFCE8', border: '#FDE68A', text: '#A16207', dot: '#EAB308' },
+  'Research':            { bg: '#FDF4FF', border: '#E9D5FF', text: '#7E22CE', dot: '#A855F7' },
+  'Submission':          { bg: '#FFF7ED', border: '#FED7AA', text: '#C2410C', dot: '#F97316' },
+  'Conferment':          { bg: '#F0FDFA', border: '#99F6E4', text: '#0F766E', dot: '#14B8A6' },
+  'Alumni':              { bg: '#FFF1F2', border: '#FECDD3', text: '#BE123C', dot: '#F43F5E' },
+  'Ghost':               { bg: '#F5F3F0', border: '#D6D3D1', text: '#78716C', dot: '#A8A29E' },
+  'Refund':              { bg: '#FEF2F2', border: '#FECACA', text: '#991B1B', dot: '#EF4444' },
+  'Admission Cancelled': { bg: '#F5F3F0', border: '#D6D3D1', text: '#57534E', dot: '#78716C' },
 };
 
+// ── Lifecycle selector ────────────────────────────────────────────────────────
 function LifecycleSelector({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const selected = value || 'Admission';
-  const sc = STAGE_COLORS[selected];
+  const sc = STAGE_COLORS[selected] || STAGE_COLORS['Admission'];
 
   return (
     <div style={{ position: 'relative' }}>
-      {/* Trigger button — selected stage ka color dikhao */}
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
+      <button type="button" onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '9px 12px', borderRadius: '10px', cursor: 'pointer',
           fontFamily: 'inherit', fontSize: '13px', fontWeight: 700,
           background: sc.bg, border: `1.5px solid ${sc.border}`, color: sc.text,
-          boxShadow: `0 2px 8px ${sc.dot}22`, transition: 'all 0.15s',
+          transition: 'all 0.15s',
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{
-            width: '9px', height: '9px', borderRadius: '50%',
-            background: sc.dot, boxShadow: `0 0 0 3px ${sc.dot}33`, flexShrink: 0,
-          }} />
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
           {selected}
         </span>
-        {/* Arrow */}
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
           <path d="M2 4l4 4 4-4" stroke={sc.text} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </button>
 
-      {/* Dropdown list */}
       {open && (
-        <div
-          style={{
-            position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, zIndex: 999,
-            background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px',
-            boxShadow: '0 8px 28px rgba(0,0,0,0.12)', overflow: 'hidden',
-          }}
-          onMouseLeave={() => setOpen(false)}
-        >
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, zIndex: 999,
+          background: 'white', border: `1px solid ${T.sectionBorder}`, borderRadius: '12px',
+          boxShadow: '0 8px 28px rgba(28,25,23,0.12)', overflow: 'hidden',
+        }} onMouseLeave={() => setOpen(false)}>
           {JOURNEY_STAGES.map((stage, i) => {
-            const c = STAGE_COLORS[stage];
+            const c = STAGE_COLORS[stage] || STAGE_COLORS['Ghost'];
             const isActive = stage === selected;
             return (
-              <div
-                key={stage}
+              <div key={stage}
                 onMouseDown={() => { onChange(stage); setOpen(false); }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '10px 14px', cursor: 'pointer', fontSize: '13px',
+                  padding: '9px 14px', cursor: 'pointer', fontSize: '13px',
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? c.text : '#334155',
+                  color: isActive ? c.text : '#57534E',
                   background: isActive ? c.bg : 'white',
-                  borderBottom: i < JOURNEY_STAGES.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  borderBottom: i < JOURNEY_STAGES.length - 1 ? `1px solid #F5F3F0` : 'none',
                   transition: 'background 0.1s',
                 }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = c.bg; }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#F5F3F0'; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'white'; }}
               >
-                <span style={{
-                  width: '9px', height: '9px', borderRadius: '50%', flexShrink: 0,
-                  background: c.dot,
-                  boxShadow: isActive ? `0 0 0 3px ${c.dot}33` : 'none',
-                }} />
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, background: c.dot }} />
                 <span style={{ flex: 1 }}>{stage}</span>
                 {isActive && (
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -361,23 +332,19 @@ function LifecycleSelector({ value, onChange }) {
     </div>
   );
 }
-// ────────────────────────────────────────────────────────────────────────────
 
-function SectionLabel({ children }) {
-  return (
-    <p style={{ fontSize: '10px', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
-      {children}
-    </p>
-  );
-}
+// ── Formatters ────────────────────────────────────────────────────────────────
+function fmt(n) { return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtINR(n) { return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN'); }
 
-function fmt(n) {
-  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function fmtINR(n) {
-  return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
-}
+// ── Icons for section labels ──────────────────────────────────────────────────
+const UserIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+const AcadIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
+const FeeIcon  = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+const PayIcon  = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>;
+const CostIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose, onSave }) {
   const isEdit = !!initial;
   const [form, setForm]     = useState(EMPTY);
@@ -402,9 +369,8 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
     }
   }, [initial, liveRate]);
 
-  // Email se auto-fill: valid email type karne ke baad 600ms wait karke lookup karo
   useEffect(() => {
-    if (isEdit) return; // edit mode mein auto-fill nahi
+    if (isEdit) return;
     const email = form.email.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailLookup({ loading: false, found: false, notFound: false });
@@ -417,15 +383,7 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
         const { data } = await api.get(`/api/students/lookup/email?email=${encodeURIComponent(email)}`);
         if (data.success && data.data) {
           const s = data.data;
-          setForm(p => ({
-            ...p,
-            name:     s.name     || p.name,
-            phone:    s.phone    || p.phone,
-            region:   s.region   || p.region,
-            program:  s.program  || p.program,
-            university: s.university || p.university,
-            // payment fields blank rakhte hain — nayi course ke liye fresh fill karo
-          }));
+          setForm(p => ({ ...p, name: s.name || p.name, phone: s.phone || p.phone, region: s.region || p.region, program: s.program || p.program, university: s.university || p.university }));
           setEmailLookup({ loading: false, found: true, notFound: false });
         }
       } catch {
@@ -435,21 +393,17 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
     return () => clearTimeout(timer);
   }, [form.email, isEdit]);
 
-  const set = (k, v) => {
-    setForm((p) => ({ ...p, [k]: v }));
-    setErrors((p) => ({ ...p, [k]: '' }));
-  };
+  const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: '' })); };
 
   const calc = useMemo(() => {
-    const rate       = Number(form.exchangeRate)  || 0;
-    const totalFee   = Number(form.totalFee)       || 0;
-    const totalFeeINR= totalFee * rate;
-    // Edit mode mein actual payments use karo, add mode mein form ka initPayAmt
-    const paid       = isEdit ? totalPaid : (Number(form.initPayAmt) || 0);
-    const bankCharge = Number(form.initBankCharge) || 0;
-    const gatewayFee = Number(form.initGatewayFee) || 0;
-    const otherDed   = Number(form.initOtherDed)   || 0;
-    const totalDeductions = isEdit ? 0 : (bankCharge + gatewayFee + otherDed);
+    const rate           = Number(form.exchangeRate)  || 0;
+    const totalFee       = Number(form.totalFee)       || 0;
+    const totalFeeINR    = totalFee * rate;
+    const paid           = isEdit ? totalPaid : (Number(form.initPayAmt) || 0);
+    const bankCharge     = Number(form.initBankCharge) || 0;
+    const gatewayFee     = Number(form.initGatewayFee) || 0;
+    const otherDed       = Number(form.initOtherDed)   || 0;
+    const totalDeductions= isEdit ? 0 : (bankCharge + gatewayFee + otherDed);
     const netReceived    = paid - totalDeductions;
     const netReceivedINR = netReceived * rate;
     const uniFee         = Number(form.uniFee)         || 0;
@@ -458,7 +412,7 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
     const shipmentCost   = Number(form.shipmentCost)   || 0;
     const totalCosts     = uniFee + consultantComm + thesisCost + shipmentCost;
     const remainingBalance = totalFee - paid;
-    const netProfit        = netReceived - totalCosts;
+    const netProfit      = netReceived - totalCosts;
     return { totalFeeINR, totalDeductions, netReceived, netReceivedINR, totalCosts, remainingBalance, netProfit, paid, totalFee };
   }, [form, isEdit, totalPaid]);
 
@@ -499,22 +453,25 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
     } finally { setSaving(false); }
   };
 
+  const sectionStyle = {
+    background: T.sectionBg,
+    border: `1px solid ${T.sectionBorder}`,
+    borderRadius: '14px',
+    padding: '16px',
+  };
+
   return (
     <>
-      {/* Slide-down animation for custom input */}
       <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
 
       <Modal open onClose={onClose} title={isEdit ? 'Edit Student' : 'Add New Student'} size="lg">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Basic Info */}
-          <div style={{ background: '#fafbff', border: '1px solid #eef0f8', borderRadius: '14px', padding: '16px' }}>
-            <SectionLabel>👤 Basic Information</SectionLabel>
+          {/* ── Basic Info ──────────────────────────────── */}
+          <div style={sectionStyle}>
+            <SectionLabel icon={UserIcon}>Basic Information</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <Field label="Full Name *" error={errors.name}>
                 <StyledInput value={form.name} onChange={e => set('name', e.target.value)} placeholder="Deepak Nayyar" />
@@ -525,75 +482,52 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
               <Field label="Email" error={errors.email}>
                 <div style={{ position: 'relative' }}>
                   <StyledInput
-                    type="email"
-                    value={form.email}
+                    type="email" value={form.email}
                     onChange={e => set('email', e.target.value)}
                     placeholder="student@email.com"
                     style={{ paddingRight: emailLookup.loading || emailLookup.found || emailLookup.notFound ? '90px' : undefined }}
                   />
                   {!isEdit && emailLookup.loading && (
-                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 7px' }}>
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#78716C', background: '#EAE8E4', borderRadius: '6px', padding: '3px 7px' }}>
                       Searching…
                     </span>
                   )}
                   {!isEdit && emailLookup.found && (
-                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', borderRadius: '6px', padding: '3px 7px' }}>
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#10B981', background: 'rgba(16,185,129,0.1)', borderRadius: '6px', padding: '3px 7px' }}>
                       ✓ Auto-filled
                     </span>
                   )}
                   {!isEdit && emailLookup.notFound && form.email.includes('@') && (
-                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#94a3b8', background: '#f1f5f9', borderRadius: '6px', padding: '3px 7px' }}>
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: T.labelColor, background: '#EAE8E4', borderRadius: '6px', padding: '3px 7px' }}>
                       New student
                     </span>
                   )}
                 </div>
                 {!isEdit && emailLookup.found && (
-                  <p style={{ fontSize: '11px', color: '#10b981', marginTop: '2px' }}>
-                    📋 Details auto-filled — sirf payment fields fresh bharni hain
-                  </p>
+                  <p style={{ fontSize: '11px', color: '#10B981', marginTop: '2px' }}>Details auto-filled — payment fields fill karo</p>
                 )}
               </Field>
               <Field label="Phone" error={errors.phone}>
                 <StyledInput type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+44 7700 900123" />
               </Field>
-
-              {/* Lifecycle — add aur edit dono mode mein dikhao */}
               <div style={{ gridColumn: '1 / -1' }}>
                 <Field label="Lifecycle / Journey Stage">
-                  <LifecycleSelector
-                    value={form.journeyStatus || 'Admission'}
-                    onChange={v => set('journeyStatus', v)}
-                  />
+                  <LifecycleSelector value={form.journeyStatus || 'Admission'} onChange={v => set('journeyStatus', v)} />
                 </Field>
               </div>
             </div>
           </div>
 
-          {/* Academic */}
-          <div style={{ background: '#fafbff', border: '1px solid #eef0f8', borderRadius: '14px', padding: '16px' }}>
-            <SectionLabel>🎓 Academic Details</SectionLabel>
+          {/* ── Academic ────────────────────────────────── */}
+          <div style={sectionStyle}>
+            <SectionLabel icon={AcadIcon}>Academic Details</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-
-              {/* Region — SearchableCountry */}
               <Field label="Region *" error={errors.region}>
-                <SearchableCountry
-                  value={form.region}
-                  onChange={v => set('region', v)}
-                  error={errors.region}
-                />
+                <SearchableCountry value={form.region} onChange={v => set('region', v)} error={errors.region} />
               </Field>
-
-              {/* Program — SelectWithOther */}
               <Field label="Program *" error={errors.program}>
-                <SelectWithOther
-                  value={form.program}
-                  onChange={v => set('program', v)}
-                  options={PROGRAMS}
-                  placeholder="Select program"
-                  inputPlaceholder="e.g. Certificate, LLM..."
-                />
+                <SelectWithOther value={form.program} onChange={v => set('program', v)} options={PROGRAMS} placeholder="Select program" inputPlaceholder="e.g. Certificate, LLM..." />
               </Field>
-
               <div style={{ gridColumn: '1 / -1' }}>
                 <Field label="University *" error={errors.university}>
                   <StyledInput value={form.university} onChange={e => set('university', e.target.value)} placeholder="Kennedy University" />
@@ -602,9 +536,9 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
             </div>
           </div>
 
-          {/* Fee */}
-          <div style={{ background: '#fafbff', border: '1px solid #eef0f8', borderRadius: '14px', padding: '16px' }}>
-            <SectionLabel>💵 Fee & Exchange Rate</SectionLabel>
+          {/* ── Fee ─────────────────────────────────────── */}
+          <div style={sectionStyle}>
+            <SectionLabel icon={FeeIcon}>Fee & Exchange Rate</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <Field label="Total Fee (USD) *" error={errors.totalFee}>
                 <StyledInput type="number" value={form.totalFee} onChange={e => set('totalFee', e.target.value)} placeholder="4700" />
@@ -616,7 +550,7 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
                     <button type="button" onClick={() => set('exchangeRate', liveRate.toFixed(2))}
                       style={{
                         position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                        fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.1)',
+                        fontSize: '10px', fontWeight: 700, color: '#57534E', background: '#EAE8E4',
                         border: 'none', borderRadius: '6px', padding: '3px 7px', cursor: 'pointer',
                       }}>
                       Live ₹{liveRate.toFixed(1)}
@@ -629,38 +563,25 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
               <div style={{
                 marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '10px 14px', borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))',
-                border: '1px solid rgba(99,102,241,0.15)',
+                background: '#EAE8E4', border: `1px solid ${T.sectionBorder}`,
               }}>
-                <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>🇮🇳 Total Fee INR (Auto)</span>
-                <span style={{ fontSize: '14px', fontWeight: 800, color: '#6366f1' }}>{fmtINR(calc.totalFeeINR)}</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: T.labelColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total Fee INR (Auto)</span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: '#1C1917', fontVariantNumeric: 'tabular-nums' }}>{fmtINR(calc.totalFeeINR)}</span>
               </div>
             )}
           </div>
 
-          {/* Initial Payment */}
+          {/* ── Initial Payment ──────────────────────────── */}
           {!isEdit && (
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.04), rgba(139,92,246,0.02))',
-              border: '1px solid rgba(99,102,241,0.18)', borderRadius: '14px', padding: '16px',
-            }}>
-              <SectionLabel>💰 Initial Payment (Optional)</SectionLabel>
+            <div style={{ ...sectionStyle, background: '#F9F8F7', borderColor: '#E0DDD9' }}>
+              <SectionLabel icon={PayIcon}>Initial Payment (Optional)</SectionLabel>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <Field label="Amount (USD)">
                   <StyledInput type="number" value={form.initPayAmt} onChange={e => set('initPayAmt', e.target.value)} placeholder="0" />
                 </Field>
-
-                {/* Method — SelectWithOther */}
                 <Field label="Method">
-                  <SelectWithOther
-                    value={form.initPayMethod}
-                    onChange={v => set('initPayMethod', v)}
-                    options={METHODS}
-                    placeholder="Select method"
-                    inputPlaceholder="e.g. Crypto, Cheque..."
-                  />
+                  <SelectWithOther value={form.initPayMethod} onChange={v => set('initPayMethod', v)} options={METHODS} placeholder="Select method" inputPlaceholder="e.g. Crypto, Cheque..." />
                 </Field>
-
                 <Field label="Bank Charge (USD)">
                   <StyledInput type="number" value={form.initBankCharge} onChange={e => set('initBankCharge', e.target.value)} placeholder="0" />
                 </Field>
@@ -672,11 +593,8 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
                 </Field>
                 {calc.paid > 0 && (
                   <Field label="Net Received (Auto)">
-                    <div style={{
-                      border: '1px solid rgba(99,102,241,0.2)', borderRadius: '10px', padding: '9px 12px',
-                      background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))',
-                    }}>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#6366f1' }}>
+                    <div style={{ border: `1px solid ${T.sectionBorder}`, borderRadius: '10px', padding: '9px 12px', background: '#EAE8E4' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: '#1C1917', fontVariantNumeric: 'tabular-nums' }}>
                         {fmt(calc.netReceived)} = {fmtINR(calc.netReceivedINR)}
                       </span>
                     </div>
@@ -686,9 +604,9 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
             </div>
           )}
 
-          {/* Cost Breakdown */}
-          <div style={{ background: '#fafbff', border: '1px solid #eef0f8', borderRadius: '14px', padding: '16px' }}>
-            <SectionLabel>🧾 Cost Breakdown (Optional)</SectionLabel>
+          {/* ── Cost Breakdown ───────────────────────────── */}
+          <div style={sectionStyle}>
+            <SectionLabel icon={CostIcon}>Cost Breakdown (Optional)</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {[
                 { k: 'uniFee',         label: 'University Fee (USD)' },
@@ -704,81 +622,76 @@ export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose
             {calc.totalCosts > 0 && (
               <div style={{
                 marginTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '10px 14px', borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))',
-                border: '1px solid rgba(99,102,241,0.15)',
+                padding: '10px 14px', borderRadius: '10px', background: '#EAE8E4', border: `1px solid ${T.sectionBorder}`,
               }}>
-                <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total Costs (Auto)</span>
-                <span style={{ fontSize: '14px', fontWeight: 800, color: '#6366f1' }}>{fmt(calc.totalCosts)}</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: T.labelColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total Costs (Auto)</span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: '#1C1917', fontVariantNumeric: 'tabular-nums' }}>{fmt(calc.totalCosts)}</span>
               </div>
             )}
           </div>
 
-          {/* Full Summary */}
+          {/* ── Full Summary ─────────────────────────────── */}
           {calc.totalFee > 0 && (
-            <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-              <div style={{
-                padding: '10px 16px',
-                background: 'linear-gradient(135deg, #0f172a, #1e1b4b)',
-              }}>
-                <p style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(165,180,252,0.9)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                  🧮 Full Summary
+            <div style={{ borderRadius: '14px', overflow: 'hidden', border: `1px solid ${T.divider}` }}>
+              <div style={{ padding: '10px 16px', background: '#1C1917' }}>
+                <p style={{ fontSize: '10px', fontWeight: 800, color: '#A8A29E', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Full Summary
                 </p>
               </div>
-              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#fafbff' }}>
+              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: T.sectionBg }}>
                 {[
-                  { label: 'Total Fee', value: fmt(calc.totalFee), color: '#334155' },
-                  calc.paid > 0 && { label: 'Amount Paid', value: `− ${fmt(calc.paid)}`, color: '#10b981' },
-                  calc.totalDeductions > 0 && { label: 'Gateway / Bank Charges', value: `− ${fmt(calc.totalDeductions)}`, color: '#f59e0b' },
-                  calc.paid > 0 && { label: 'Net Received', value: `${fmt(calc.netReceived)} (${fmtINR(calc.netReceivedINR)})`, color: '#334155' },
-                  calc.totalCosts > 0 && { label: 'Total Expenses', value: `− ${fmt(calc.totalCosts)}`, color: '#ef4444' },
+                  { label: 'Total Fee', value: fmt(calc.totalFee), color: '#1C1917' },
+                  calc.paid > 0 && { label: 'Amount Paid', value: `− ${fmt(calc.paid)}`, color: '#10B981' },
+                  calc.totalDeductions > 0 && { label: 'Gateway / Bank Charges', value: `− ${fmt(calc.totalDeductions)}`, color: '#F59E0B' },
+                  calc.paid > 0 && { label: 'Net Received', value: `${fmt(calc.netReceived)} (${fmtINR(calc.netReceivedINR)})`, color: '#1C1917' },
+                  calc.totalCosts > 0 && { label: 'Total Expenses', value: `− ${fmt(calc.totalCosts)}`, color: '#EF4444' },
                 ].filter(Boolean).map(({ label, value, color }) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>{label}</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color }}>{value}</span>
+                    <span style={{ fontSize: '12px', color: '#78716C' }}>{label}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
                   </div>
                 ))}
-
-                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #e2e8f0, transparent)', margin: '2px 0' }} />
-
+                <div style={{ height: '1px', background: T.divider, margin: '2px 0' }} />
                 {calc.paid > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#334155' }}>Net Profit (So Far)</span>
-                    <span style={{ fontSize: '15px', fontWeight: 800, color: calc.netProfit >= 0 ? '#10b981' : '#ef4444' }}>
-                      {calc.netProfit < 0 ? '−' : ''}{fmt(calc.netProfit)}
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#1C1917' }}>Net Profit (So Far)</span>
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: calc.netProfit >= 0 ? '#10B981' : '#EF4444', fontVariantNumeric: 'tabular-nums' }}>
+                      {calc.netProfit < 0 ? '−' : ''}{fmt(Math.abs(calc.netProfit))}
                     </span>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Remaining Balance</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#f59e0b' }}>{fmt(calc.remainingBalance)}</span>
+                  <span style={{ fontSize: '12px', color: '#78716C' }}>Remaining Balance</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#F59E0B', fontVariantNumeric: 'tabular-nums' }}>{fmt(calc.remainingBalance)}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Actions */}
+          {/* ── Actions ──────────────────────────────────── */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '4px' }}>
             <button onClick={onClose}
               style={{
                 padding: '9px 18px', fontSize: '13px', fontWeight: 600,
-                color: '#64748b', background: '#f1f5f9', border: 'none',
-                borderRadius: '10px', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
+                color: T.cancelText, background: T.cancelBg, border: 'none',
+                borderRadius: '10px', cursor: 'pointer', transition: 'background 0.15s', fontFamily: 'inherit',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
-              onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}>
+              onMouseEnter={e => e.currentTarget.style.background = '#E0DDD9'}
+              onMouseLeave={e => e.currentTarget.style.background = T.cancelBg}>
               Cancel
             </button>
             <button onClick={handleSubmit} disabled={saving}
               style={{
                 padding: '9px 22px', fontSize: '13px', fontWeight: 700,
-                color: 'white', border: 'none', borderRadius: '10px', cursor: saving ? 'not-allowed' : 'pointer',
-                background: saving ? '#a5b4fc' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                boxShadow: saving ? 'none' : '0 4px 12px rgba(99,102,241,0.35)',
-                transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
+                color: 'white', border: 'none', borderRadius: '10px',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                background: saving ? '#78716C' : T.saveBg,
+                opacity: saving ? 0.7 : 1,
+                transition: 'background 0.15s',
+                display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
               }}
-              onMouseEnter={e => { if (!saving) e.currentTarget.style.boxShadow = '0 6px 16px rgba(99,102,241,0.45)'; }}
-              onMouseLeave={e => { if (!saving) e.currentTarget.style.boxShadow = '0 4px 12px rgba(99,102,241,0.35)'; }}>
+              onMouseEnter={e => { if (!saving) e.currentTarget.style.background = T.saveHover; }}
+              onMouseLeave={e => { if (!saving) e.currentTarget.style.background = T.saveBg; }}>
               {saving && (
                 <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12"/>

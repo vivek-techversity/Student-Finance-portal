@@ -2,59 +2,118 @@ import { useMemo } from 'react';
 import { useAppData } from '../components/layout/AppLayout';
 import { fmt$, fmtINR, fmtShort, REGION_COLORS } from '../utils/formatters';
 
-// ── Reusable mini bar ─────────────────────────────────────────
+// Warm neutral palette
+const T = {
+  bg:          '#F5F3F0',
+  border:      '#E7E4E0',
+  borderLight: '#F0EDE9',
+  text:        '#1C1917',
+  label:       '#A8A29E',
+  sub:         '#78716C',
+  card:        '#ffffff',
+  iconBg:      '#EDEAE6',
+  iconColor:   '#57534E',
+  barTrack:    '#E7E4E0',
+};
+
+// Summary card accent colors — semantic
+const CARD_ACCENTS = {
+  collected:   '#1C1917',
+  profit:      '#10B981',
+  outstanding: '#EF4444',
+  deductions:  '#F59E0B',
+};
+
+// Bar chart program colors — varied but not indigo-heavy
+const PROGRAM_COLORS = ['#1C1917','#10b981','#F59E0B','#8B5CF6','#EF4444','#06B6D4'];
+
+// Method bar colors — semantic per method
+const METHOD_COLORS = {
+  'Bank Transfer': '#1C1917',
+  UPI:             '#10b981',
+  PayPal:          '#F59E0B',
+  EMI:             '#8B5CF6',
+  Other:           '#A8A29E',
+};
+
+// Section header SVG icons — no emoji
+const SectionIcons = {
+  monthly: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  region: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  ),
+  program: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+    </svg>
+  ),
+  methods: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+  ),
+};
+
+// ── Mini bar ─────────────────────────────────────────────────────
 function Bar({ label, value, max, color, sub }) {
   const pct = Math.max(4, (value / Math.max(max, 1)) * 100);
   return (
-    <div className="flex items-center gap-3">
-      <p className="text-xs font-semibold text-slate-500 w-20 flex-shrink-0 text-right truncate">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <p style={{ fontSize: '12px', fontWeight: 600, color: T.sub, width: '72px', flexShrink: 0, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {label}
       </p>
-      <div className="flex-1 bg-slate-100 rounded-full h-7 overflow-hidden">
+      <div style={{ flex: 1, background: T.barTrack, borderRadius: '99px', height: '28px', overflow: 'hidden' }}>
         <div
-          className="h-full rounded-full flex items-center px-3 transition-all duration-500"
-          style={{ width: `${pct}%`, backgroundColor: color }}
+          style={{
+            height: '100%', borderRadius: '99px',
+            display: 'flex', alignItems: 'center', paddingLeft: '12px', paddingRight: '12px',
+            width: `${pct}%`, backgroundColor: color,
+            transition: 'width 0.5s ease',
+          }}
         >
-          <span className="text-[11px] font-bold text-white whitespace-nowrap truncate">
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {fmt$(value)}
           </span>
         </div>
       </div>
       {sub != null && (
-        <p className="text-xs text-slate-400 w-10 flex-shrink-0 text-right">{sub}</p>
+        <p style={{ fontSize: '11px', color: T.label, width: '32px', flexShrink: 0, textAlign: 'right' }}>{sub}</p>
       )}
     </div>
   );
 }
 
-// ── Section card wrapper ───────────────────────────────────────
-function Section({ icon, title, subtitle, children }) {
+// ── Section card ─────────────────────────────────────────────────
+function Section({ iconKey, title, subtitle, children }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-base">
-          {icon}
+    <div style={{ background: T.card, borderRadius: '14px', border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.borderLight}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: T.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.iconColor, flexShrink: 0 }}>
+          {SectionIcons[iconKey]}
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-800">{title}</p>
-          {subtitle && <p className="text-[11px] text-slate-400">{subtitle}</p>}
+          <p style={{ fontSize: '13px', fontWeight: 700, color: T.text, margin: 0 }}>{title}</p>
+          {subtitle && <p style={{ fontSize: '11px', color: T.label, margin: 0 }}>{subtitle}</p>}
         </div>
       </div>
-      <div className="px-5 py-5">{children}</div>
+      <div style={{ padding: '20px' }}>{children}</div>
     </div>
   );
 }
 
 export default function AnalyticsPage() {
-  const {
-    students = [],
-    payments = [],
-    calcs    = {},
-    liveRate,
-    loading,
-  } = useAppData();
+  const { students = [], payments = [], calcs = {}, liveRate, loading } = useAppData();
 
-  // ── Region aggregates ─────────────────────────────────────────
   const regionData = useMemo(() => {
     const m = {};
     students.forEach((s) => {
@@ -67,12 +126,9 @@ export default function AnalyticsPage() {
       m[s.region].outstanding += c.outstanding;
       m[s.region].count++;
     });
-    return Object.entries(m)
-      .map(([region, v]) => ({ region, ...v }))
-      .sort((a, b) => b.received - a.received);
+    return Object.entries(m).map(([region, v]) => ({ region, ...v })).sort((a, b) => b.received - a.received);
   }, [students, calcs]);
 
-  // ── Program aggregates ────────────────────────────────────────
   const programData = useMemo(() => {
     const m = {};
     students.forEach((s) => {
@@ -83,12 +139,9 @@ export default function AnalyticsPage() {
       m[s.program].profit   += c.netProfitUSD;
       m[s.program].count++;
     });
-    return Object.entries(m)
-      .map(([program, v]) => ({ program, ...v }))
-      .sort((a, b) => b.received - a.received);
+    return Object.entries(m).map(([program, v]) => ({ program, ...v })).sort((a, b) => b.received - a.received);
   }, [students, calcs]);
 
-  // ── Monthly collections (last 6 months) ───────────────────────
   const monthlyData = useMemo(() => {
     const months = [];
     const now = new Date();
@@ -97,8 +150,7 @@ export default function AnalyticsPage() {
       months.push({
         key:   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
         label: d.toLocaleString('en-US', { month: 'short', year: '2-digit' }),
-        total: 0,
-        count: 0,
+        total: 0, count: 0,
       });
     }
     payments.forEach((p) => {
@@ -109,7 +161,6 @@ export default function AnalyticsPage() {
     return months;
   }, [payments]);
 
-  // ── Payment method aggregates ─────────────────────────────────
   const methodData = useMemo(() => {
     const m = {};
     payments.forEach((p) => {
@@ -118,38 +169,23 @@ export default function AnalyticsPage() {
       m[method].total += p.amountUSD;
       m[method].count++;
     });
-    return Object.entries(m)
-      .map(([method, v]) => ({ method, ...v }))
-      .sort((a, b) => b.total - a.total);
+    return Object.entries(m).map(([method, v]) => ({ method, ...v })).sort((a, b) => b.total - a.total);
   }, [payments]);
 
-  // ── Summary totals ────────────────────────────────────────────
   const totals = useMemo(() => {
     const vals = Object.values(calcs);
     return {
-      received:    vals.reduce((a, c) => a + c.totalReceived,  0),
-      profit:      vals.reduce((a, c) => a + c.netProfitUSD,   0),
-      outstanding: vals.reduce((a, c) => a + c.outstanding,    0),
-      deductions:  vals.reduce((a, c) => a + c.totalDeductions, 0),
+      received:    vals.reduce((a, c) => a + c.totalReceived,   0),
+      profit:      vals.reduce((a, c) => a + c.netProfitUSD,    0),
+      outstanding: vals.reduce((a, c) => a + c.outstanding,     0),
+      deductions:  vals.reduce((a, c) => a + (c.totalDeductions || 0), 0),
     };
   }, [calcs]);
 
-  const METHOD_COLORS = {
-    'Bank Transfer': '#6366f1',
-    UPI:             '#10b981',
-    PayPal:          '#f59e0b',
-    EMI:             '#8b5cf6',
-    Other:           '#94a3b8',
-  };
-
-  const PROGRAM_COLORS = [
-    '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4',
-  ];
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+        <div style={{ width: '28px', height: '28px', borderRadius: '50%', border: `2px solid ${T.text}`, borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
       </div>
     );
   }
@@ -157,99 +193,109 @@ export default function AnalyticsPage() {
   const maxMonthly = Math.max(...monthlyData.map((m) => m.total), 1);
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      {/* ── Summary cards ─────────────────────── */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* ── Summary cards ──────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
         {[
-          { label: 'Total Collected',   value: fmt$(totals.received),    sub: liveRate ? fmtINR(totals.received * liveRate) : '—',    color: 'from-indigo-500 to-violet-500', bg: 'bg-indigo-50', tc: 'text-indigo-600' },
-          { label: 'Net Profit',        value: fmt$(totals.profit),      sub: liveRate ? fmtINR(totals.profit * liveRate) : '—',      color: 'from-emerald-400 to-green-500', bg: 'bg-emerald-50', tc: 'text-emerald-600' },
-          { label: 'Total Outstanding', value: fmt$(totals.outstanding), sub: `${students.filter((s) => calcs[s._id]?.outstanding > 0).length} students`, color: 'from-red-400 to-rose-500', bg: 'bg-red-50', tc: 'text-red-500' },
-          { label: 'Total Deductions',  value: fmt$(totals.deductions),  sub: `${payments.length} payments`,                          color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', tc: 'text-amber-600' },
+          { key: 'collected',   label: 'Total Collected',   value: fmtShort(totals.received),    sub: liveRate ? fmtINR(totals.received * liveRate) : '—',    valueColor: T.text },
+          { key: 'profit',      label: 'Net Profit',        value: fmtShort(totals.profit),      sub: liveRate ? fmtINR(totals.profit * liveRate) : '—',      valueColor: '#10B981' },
+          { key: 'outstanding', label: 'Total Outstanding', value: fmtShort(totals.outstanding), sub: `${students.filter((s) => calcs[s._id]?.outstanding > 0).length} students`, valueColor: '#EF4444' },
+          { key: 'deductions',  label: 'Total Deductions',  value: fmtShort(totals.deductions),  sub: `${payments.length} payments`,                           valueColor: '#F59E0B' },
         ].map((card) => (
-          <div key={card.label} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className={`h-0.5 w-full bg-gradient-to-r ${card.color}`} />
-            <div className="p-4">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">{card.label}</p>
-              <p className={`text-xl font-bold ${card.tc}`}>{card.value}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">{card.sub}</p>
+          <div
+            key={card.key}
+            style={{ background: T.card, borderRadius: '14px', border: `1px solid ${T.border}`, overflow: 'hidden' }}
+          >
+            <div style={{ height: '3px', background: CARD_ACCENTS[card.key] }} />
+            <div style={{ padding: '16px' }}>
+              <p style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                {card.label}
+              </p>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: card.valueColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', margin: 0 }}>
+                {card.value}
+              </p>
+              <p style={{ fontSize: '11px', color: T.label, marginTop: '2px' }}>{card.sub}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Monthly collections ───────────────── */}
-      <Section icon="📅" title="Monthly Collections" subtitle="Last 6 months — USD received">
+      {/* ── Monthly Collections ─────────────────────────────────── */}
+      <Section iconKey="monthly" title="Monthly Collections" subtitle="Last 6 months — USD received">
         {monthlyData.every((m) => m.total === 0) ? (
-          <p className="text-sm text-slate-400 text-center py-6">No payment data yet</p>
+          <p style={{ fontSize: '13px', color: T.label, textAlign: 'center', padding: '24px 0' }}>No payment data yet</p>
         ) : (
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {monthlyData.map((m) => (
-              <div key={m.key} className="flex items-center gap-3">
-                <p className="text-xs font-semibold text-slate-500 w-14 flex-shrink-0 text-right">
+              <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: T.sub, width: '44px', flexShrink: 0, textAlign: 'right' }}>
                   {m.label}
                 </p>
-                <div className="flex-1 bg-slate-100 rounded-full h-7 overflow-hidden">
+                <div style={{ flex: 1, background: T.barTrack, borderRadius: '99px', height: '28px', overflow: 'hidden' }}>
                   <div
-                    className="h-full rounded-full flex items-center px-3 transition-all duration-500
-                      bg-gradient-to-r from-indigo-400 to-violet-500"
-                    style={{ width: `${Math.max(4, (m.total / maxMonthly) * 100)}%` }}
+                    style={{
+                      height: '100%', borderRadius: '99px', backgroundColor: T.text,
+                      display: 'flex', alignItems: 'center', paddingLeft: '12px',
+                      width: `${Math.max(4, (m.total / maxMonthly) * 100)}%`,
+                      transition: 'width 0.5s ease',
+                    }}
                   >
                     {m.total > 0 && (
-                      <span className="text-[11px] font-bold text-white whitespace-nowrap">
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>
                         {fmt$(m.total)}
                       </span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 w-8 flex-shrink-0 text-right">{m.count}x</p>
+                <p style={{ fontSize: '11px', color: T.label, width: '28px', flexShrink: 0, textAlign: 'right' }}>
+                  {m.count}x
+                </p>
               </div>
             ))}
           </div>
         )}
       </Section>
 
-      {/* ── Region + Program side by side ─────── */}
-      <div className="grid grid-cols-2 gap-5">
+      {/* ── Region + Program ────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
         {/* Region */}
-        <Section icon="🌍" title="By Region" subtitle="Net profit per region">
+        <Section iconKey="region" title="By Region" subtitle="Net profit per region">
           {regionData.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-6">No data yet</p>
+            <p style={{ fontSize: '13px', color: T.label, textAlign: 'center', padding: '24px 0' }}>No data yet</p>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {regionData.map((r) => (
                 <Bar
                   key={r.region}
                   label={r.region}
                   value={r.profit}
                   max={Math.max(...regionData.map((x) => x.profit), 1)}
-                  color={REGION_COLORS[r.region] || '#94a3b8'}
+                  color={REGION_COLORS[r.region] || '#A8A29E'}
                   sub={r.count}
                 />
               ))}
             </div>
           )}
 
-          {/* Region table */}
           {regionData.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100">
-              <table className="w-full text-xs">
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${T.borderLight}` }}>
+              <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="text-slate-400 text-left">
-                    <th className="pb-2 font-semibold">Region</th>
-                    <th className="pb-2 font-semibold text-right">Received</th>
-                    <th className="pb-2 font-semibold text-right">Outstanding</th>
-                    <th className="pb-2 font-semibold text-right">Students</th>
+                  <tr>
+                    {['Region', 'Received', 'Outstanding', 'Students'].map((h, i) => (
+                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {regionData.map((r) => (
-                    <tr key={r.region}>
-                      <td className="py-1.5 font-medium text-slate-700">{r.region}</td>
-                      <td className="py-1.5 text-right text-emerald-600 font-semibold">{fmt$(r.received)}</td>
-                      <td className="py-1.5 text-right text-red-400">{fmt$(r.outstanding)}</td>
-                      <td className="py-1.5 text-right text-slate-500">{r.count}</td>
+                    <tr key={r.region} style={{ borderTop: `1px solid ${T.borderLight}` }}>
+                      <td style={{ padding: '6px 0', fontWeight: 600, color: T.text }}>{r.region}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: '#10B981', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmt$(r.received)}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: '#EF4444', fontVariantNumeric: 'tabular-nums' }}>{fmt$(r.outstanding)}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: T.sub }}>{r.count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -259,11 +305,11 @@ export default function AnalyticsPage() {
         </Section>
 
         {/* Program */}
-        <Section icon="🎓" title="By Program" subtitle="Received amount per program">
+        <Section iconKey="program" title="By Program" subtitle="Received amount per program">
           {programData.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-6">No data yet</p>
+            <p style={{ fontSize: '13px', color: T.label, textAlign: 'center', padding: '24px 0' }}>No data yet</p>
           ) : (
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {programData.map((p, i) => (
                 <Bar
                   key={p.program}
@@ -278,23 +324,22 @@ export default function AnalyticsPage() {
           )}
 
           {programData.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100">
-              <table className="w-full text-xs">
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${T.borderLight}` }}>
+              <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="text-slate-400 text-left">
-                    <th className="pb-2 font-semibold">Program</th>
-                    <th className="pb-2 font-semibold text-right">Received</th>
-                    <th className="pb-2 font-semibold text-right">Profit</th>
-                    <th className="pb-2 font-semibold text-right">Students</th>
+                  <tr>
+                    {['Program', 'Received', 'Profit', 'Students'].map((h, i) => (
+                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {programData.map((p) => (
-                    <tr key={p.program}>
-                      <td className="py-1.5 font-medium text-slate-700 truncate max-w-[100px]">{p.program}</td>
-                      <td className="py-1.5 text-right text-emerald-600 font-semibold">{fmt$(p.received)}</td>
-                      <td className="py-1.5 text-right text-violet-600">{fmt$(p.profit)}</td>
-                      <td className="py-1.5 text-right text-slate-500">{p.count}</td>
+                    <tr key={p.program} style={{ borderTop: `1px solid ${T.borderLight}` }}>
+                      <td style={{ padding: '6px 0', fontWeight: 600, color: T.text, maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.program}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: '#10B981', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmt$(p.received)}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: '#8B5CF6', fontVariantNumeric: 'tabular-nums' }}>{fmt$(p.profit)}</td>
+                      <td style={{ padding: '6px 0', textAlign: 'right', color: T.sub }}>{p.count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -304,46 +349,43 @@ export default function AnalyticsPage() {
         </Section>
       </div>
 
-      {/* ── Payment Methods ───────────────────── */}
-      <Section icon="💳" title="Payment Methods" subtitle="Volume by method">
+      {/* ── Payment Methods ─────────────────────────────────────── */}
+      <Section iconKey="methods" title="Payment Methods" subtitle="Volume by method">
         {methodData.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-6">No payments yet</p>
+          <p style={{ fontSize: '13px', color: T.label, textAlign: 'center', padding: '24px 0' }}>No payments yet</p>
         ) : (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {methodData.map((m) => (
                 <Bar
                   key={m.method}
                   label={m.method}
                   value={m.total}
                   max={Math.max(...methodData.map((x) => x.total), 1)}
-                  color={METHOD_COLORS[m.method] || '#94a3b8'}
+                  color={METHOD_COLORS[m.method] || T.sub}
                   sub={`${m.count}x`}
                 />
               ))}
             </div>
-            <div>
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-slate-400 text-left">
-                    <th className="pb-2 font-semibold">Method</th>
-                    <th className="pb-2 font-semibold text-right">Total</th>
-                    <th className="pb-2 font-semibold text-right">Txns</th>
-                    <th className="pb-2 font-semibold text-right">Avg</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {methodData.map((m) => (
-                    <tr key={m.method}>
-                      <td className="py-1.5 font-medium text-slate-700">{m.method}</td>
-                      <td className="py-1.5 text-right text-emerald-600 font-semibold">{fmt$(m.total)}</td>
-                      <td className="py-1.5 text-right text-slate-500">{m.count}</td>
-                      <td className="py-1.5 text-right text-slate-400">{fmt$(m.total / m.count)}</td>
-                    </tr>
+            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', alignSelf: 'start' }}>
+              <thead>
+                <tr>
+                  {['Method', 'Total', 'Txns', 'Avg'].map((h, i) => (
+                    <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </tr>
+              </thead>
+              <tbody>
+                {methodData.map((m) => (
+                  <tr key={m.method} style={{ borderTop: `1px solid ${T.borderLight}` }}>
+                    <td style={{ padding: '6px 0', fontWeight: 600, color: T.text }}>{m.method}</td>
+                    <td style={{ padding: '6px 0', textAlign: 'right', color: '#10B981', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmt$(m.total)}</td>
+                    <td style={{ padding: '6px 0', textAlign: 'right', color: T.sub }}>{m.count}</td>
+                    <td style={{ padding: '6px 0', textAlign: 'right', color: T.label, fontVariantNumeric: 'tabular-nums' }}>{fmt$(m.total / m.count)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </Section>
