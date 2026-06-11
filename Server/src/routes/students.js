@@ -1,0 +1,19 @@
+const express = require('express');
+const router = express.Router();
+const verifyToken = require('../middleware/verifyToken');
+const {
+  getStudents,
+  getStudent,
+  createStudent,
+  updateStudent,
+  deleteStudent,
+} = require('../controllers/studentController')
+router.use(verifyToken);
+
+
+router.route('/').get(getStudents).post(createStudent);
+
+
+router.route('/:id').get(getStudent).put(updateStudent).delete(deleteStudent);
+
+module.exports = router;

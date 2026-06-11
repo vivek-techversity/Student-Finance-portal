@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Premium light gradient background — matches login page */
+  background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 40%, #f0f9ff 70%, #fdf4ff 100%) !important;
+  min-height: 100vh;
+}
+
+/* ── All white cards get elevation ─────────────────────────── */
+.bg-white {
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.bg-white:hover {
+  box-shadow: 0 8px 24px rgba(99,102,241,0.13), 0 2px 8px rgba(0,0,0,0.06) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ── rounded cards should not move on hover if they're modals/dropdowns ── */
+.fixed .bg-white:hover,
+[role="dialog"] .bg-white:hover,
+.bg-white .bg-white:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+
+/* ── Topbar glass effect ────────────────────────────────────── */
+header.sticky {
+  background: rgba(255,255,255,0.82) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(99,102,241,0.1) !important;
+  box-shadow: 0 1px 12px rgba(99,102,241,0.08) !important;
+}
+
+/* ── Stat cards top colored bar ─────────────────────────────── */
+/* These are the colored top borders on stat cards */
+.border-t-2.border-indigo-400 { border-top-color: #6366f1 !important; }
+.border-t-2.border-emerald-400 { border-top-color: #10b981 !important; }
+.border-t-2.border-red-400     { border-top-color: #ef4444 !important; }
+.border-t-2.border-amber-400   { border-top-color: #f59e0b !important; }
+.border-t-2.border-violet-400  { border-top-color: #8b5cf6 !important; }
+
+/* ── Tables ─────────────────────────────────────────────────── */
+thead tr {
+  background: linear-gradient(135deg, #f8faff, #f3f0ff) !important;
+}
+
+tbody tr {
+  transition: background 0.15s ease, transform 0.15s ease !important;
+}
+
+tbody tr:hover {
+  background: linear-gradient(135deg, #fafbff, #f8f5ff) !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+button[class*="bg-indigo"],
+button[class*="bg-violet"] {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  box-shadow: 0 3px 10px rgba(99,102,241,0.3) !important;
+  transition: all 0.2s !important;
+}
+
+button[class*="bg-indigo"]:hover,
+button[class*="bg-violet"]:hover {
+  box-shadow: 0 5px 16px rgba(99,102,241,0.42) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.4); }
+
+/* ── Animations ──────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeInUp { animation: fadeInUp 0.22s ease-out; }
+
+/* ── Force background on root containers ────────────────────── */
+#root,
+.min-h-screen {
+  background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 40%, #f0f9ff 70%, #fdf4ff 100%) !important;
+}
+
+/* ── Prevent hover lift on nested cards (inside cards) ──────── */
+.bg-white .bg-white:hover,
+table .bg-white:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
