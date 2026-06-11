@@ -8,6 +8,7 @@ import StudentsPage from './pages/StudentsPage';
 import StudentDetailPage from './pages/StudentDetailPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import OverduePage from './pages/OverduePage';
+import TransactionsPage from './pages/TransactionsPage';
 import Spinner from './components/ui/Spinner';
 
 // ── Auth guard: redirect to /login if not logged in ──────────
@@ -66,6 +67,7 @@ export default function App() {
               <Route path="students/:id" element={<StudentDetailPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="overdue" element={<OverduePage />} />
+              <Route path="transactions" element={<TransactionsPage />} />
             </Route>
 
             {/* Fallback */}

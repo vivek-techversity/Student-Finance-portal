@@ -16,24 +16,31 @@ export default function StudentsPage() {
     onViewStudent,
   } = useAppData();
 
-  const [searchQ,  setSearchQ]  = useState('');
-  const [fRegion,  setFRegion]  = useState('');
-  const [fStatus,  setFStatus]  = useState('');
-  const [fProgram, setFProgram] = useState('');
+  const [searchQ,   setSearchQ]   = useState('');
+  const [fRegion,   setFRegion]   = useState('');
+  const [fStatus,   setFStatus]   = useState('');
+  const [fProgram,  setFProgram]  = useState('');
+  const [sortOrder, setSortOrder] = useState('latest'); // 'latest' | 'oldest'
 
   const filtered = useMemo(() => {
-    return students.filter((s) => {
-      const c = calcs[s._id];
-      if (!c) return true;
-      const q = searchQ.toLowerCase();
-      if (q && !s.name.toLowerCase().includes(q) && !s.university.toLowerCase().includes(q) &&
-        !(s.email || '').toLowerCase().includes(q) && !(s.phone || '').includes(q)) return false;
-      if (fRegion && s.region !== fRegion) return false;
-      if (fStatus && c.status !== fStatus) return false;
-      if (fProgram && s.program !== fProgram) return false;
-      return true;
-    });
-  }, [students, calcs, searchQ, fRegion, fStatus, fProgram]);
+    return students
+      .filter((s) => {
+        const c = calcs[s._id];
+        if (!c) return true;
+        const q = searchQ.toLowerCase();
+        if (q && !s.name.toLowerCase().includes(q) && !s.university.toLowerCase().includes(q) &&
+          !(s.email || '').toLowerCase().includes(q) && !(s.phone || '').includes(q)) return false;
+        if (fRegion && s.region !== fRegion) return false;
+        if (fStatus && c.status !== fStatus) return false;
+        if (fProgram && s.program !== fProgram) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.registrationDate);
+        const db = new Date(b.registrationDate);
+        return sortOrder === 'latest' ? db - da : da - db;
+      });
+  }, [students, calcs, searchQ, fRegion, fStatus, fProgram, sortOrder]);
 
   const programs = useMemo(() => [...new Set(students.map((s) => s.program))].sort(), [students]);
 
@@ -103,6 +110,29 @@ export default function StudentsPage() {
             Clear
           </button>
         )}
+
+        {/* Sort Toggle */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '2px',
+          background: '#f1f5f9', borderRadius: '8px', padding: '3px',
+        }}>
+          {['latest', 'oldest'].map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setSortOrder(opt)}
+              style={{
+                padding: '5px 12px', borderRadius: '6px', border: 'none',
+                fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'inherit', transition: 'all 0.15s',
+                background: sortOrder === opt ? 'white' : 'transparent',
+                color: sortOrder === opt ? '#6366f1' : '#94a3b8',
+                boxShadow: sortOrder === opt ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              }}
+            >
+              {opt === 'latest' ? '↓ Latest' : '↑ Oldest'}
+            </button>
+          ))}
+        </div>
 
         <div style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 600, color: '#94a3b8' }}>
           {filtered.length} / {students.length} students

@@ -3,10 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../ui/Toast';
 
 const NAV_ITEMS = [
-  { to: '/',          icon: '📊', label: 'Dashboard',    end: true },
-  { to: '/students',  icon: '👥', label: 'All Students' },
-  { to: '/analytics', icon: '📈', label: 'Analytics' },
-  { to: '/overdue',   icon: '🔔', label: 'Overdue', badge: true },
+  { to: '/',              icon: '📊', label: 'Dashboard',    end: true },
+  { to: '/students',      icon: '👥', label: 'All Students' },
+  { to: '/transactions',  icon: '💸', label: 'Transactions' },
+  { to: '/analytics',     icon: '📈', label: 'Analytics' },
+  { to: '/overdue',       icon: '🔔', label: 'Overdue', badge: true },
 ];
 
 export default function Sidebar({ overdueCount, onAddStudent, onAddPayment, onSetTarget, onExportCSV }) {
