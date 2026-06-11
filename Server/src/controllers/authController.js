@@ -18,11 +18,12 @@ const login = async (req, res) => {
       expiresIn: "8h",
     });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 8 * 60 * 60 * 1000, // 7 * 24 * 60 * 60 * 1000 tha
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 8 * 60 * 60 * 1000,
     });
 
     res.json({ success: true, admin: { username } });
@@ -38,10 +39,11 @@ const verifyToken = (req, res) => {
 
 // Logout — cookie clear karo
 const logout = (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
   });
   res.json({ success: true, message: "Logged out successfully." });
 };

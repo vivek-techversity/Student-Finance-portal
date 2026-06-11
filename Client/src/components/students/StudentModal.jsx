@@ -4,16 +4,49 @@ import Modal from '../ui/Modal';
 const EMPTY = {
   name: '', email: '', phone: '', registrationDate: '',
   region: '', program: '', university: '',
+  journeyStatus: 'Admission',
   totalFee: '', exchangeRate: '83',
   uniFee: '', consultantComm: '', thesisCost: '', shipmentCost: '',
   initPayAmt: '', initPayMethod: 'Bank Transfer',
   initBankCharge: '', initGatewayFee: '', initOtherDed: '',
 };
 
-// "Other" is NOT in these arrays — SelectWithOther adds it automatically
-const REGIONS  = ['UK', 'USA', 'Canada', 'Australia', 'Europe'];
-const PROGRAMS = ['Academic Ph.D.', 'MBA', 'Masters', 'Bachelors', 'Diploma'];
+// All world countries
+const REGIONS = [
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia',
+  'Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin',
+  'Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi',
+  'Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia',
+  'Comoros','Congo','Costa Rica','Croatia','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica',
+  'Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini',
+  'Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada',
+  'Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia',
+  'Iran','Iraq','Ireland','Israel','Italy','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati',
+  'Kuwait','Kyrgyzstan','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania',
+  'Luxembourg','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania',
+  'Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique',
+  'Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea',
+  'North Macedonia','Norway','Oman','Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay',
+  'Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis',
+  'Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe',
+  'Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia',
+  'Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan',
+  'Suriname','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste',
+  'Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu','Uganda','Ukraine',
+  'United Arab Emirates','UK','USA','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela',
+  'Vietnam','Yemen','Zambia','Zimbabwe',
+];
+const PROGRAMS = [
+  'PhD Programs',
+  'DBA Programs',
+  'EdD Programs',
+  'Honorary Doctorate',
+  'Honorary Professorship',
+  'Executive Education',
+  'Certification Programs',
+];
 const METHODS  = ['Bank Transfer', 'UPI', 'PayPal', 'EMI'];
+const JOURNEY_STAGES = ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni'];
 
 const inputStyle = {
   border: '1px solid #e2e8f0',
@@ -74,6 +107,86 @@ function StyledSelect({ children, style = {}, ...props }) {
     </select>
   );
 }
+
+// ── SearchableCountry ────────────────────────────────────────────────────────
+function SearchableCountry({ value, onChange, error }) {
+  const [query, setQuery]       = useState('');
+  const [open, setOpen]         = useState(false);
+  const [focused, setFocused]   = useState(false);
+  const wrapRef                 = useState(null);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return REGIONS;
+    const q = query.toLowerCase();
+    return REGIONS.filter(c => c.toLowerCase().includes(q));
+  }, [query]);
+
+  const select = (country) => {
+    onChange(country);
+    setQuery('');
+    setOpen(false);
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{
+        ...inputStyle,
+        display: 'flex', alignItems: 'center', gap: '6px',
+        cursor: 'text', padding: '0',
+        ...(focused ? { background: 'white', borderColor: '#6366f1', boxShadow: '0 0 0 3px rgba(99,102,241,0.12)' } : {}),
+        ...(error ? { borderColor: '#ef4444' } : {}),
+      }}
+        onClick={() => { setOpen(true); }}
+      >
+        {value && !open ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '9px 12px' }}>
+            <span style={{ fontSize: '13px', color: '#1e293b', fontWeight: 500 }}>{value}</span>
+            <button type="button" onClick={e => { e.stopPropagation(); onChange(''); setQuery(''); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '14px', padding: '0', lineHeight: 1 }}>✕</button>
+          </div>
+        ) : (
+          <input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setOpen(true); }}
+            onFocus={() => { setFocused(true); setOpen(true); }}
+            onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150); }}
+            placeholder={value || 'Search country…'}
+            style={{ background: 'transparent', border: 'none', outline: 'none', width: '100%', fontSize: '13px', color: '#1e293b', fontFamily: 'inherit', padding: '9px 12px' }}
+          />
+        )}
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 999,
+          background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: '200px', overflowY: 'auto',
+        }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '12px', fontSize: '12px', color: '#94a3b8', textAlign: 'center' }}>No country found</div>
+          ) : (
+            filtered.map(country => (
+              <div key={country}
+                onMouseDown={() => select(country)}
+                style={{
+                  padding: '8px 12px', fontSize: '13px', cursor: 'pointer',
+                  color: country === value ? '#6366f1' : '#1e293b',
+                  fontWeight: country === value ? 700 : 400,
+                  background: country === value ? 'rgba(99,102,241,0.06)' : 'transparent',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.06)'}
+                onMouseLeave={e => e.currentTarget.style.background = country === value ? 'rgba(99,102,241,0.06)' : 'transparent'}
+              >
+                {country}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 // ── NEW: SelectWithOther ─────────────────────────────────────────────────────
 // Jab "Other" select ho → ek custom text input slide in ho jaata hai
@@ -154,6 +267,99 @@ function SelectWithOther({ value, onChange, options, placeholder, inputPlacehold
 }
 // ────────────────────────────────────────────────────────────────────────────
 
+// ── Stage Colors ─────────────────────────────────────────────────────────────
+const STAGE_COLORS = {
+  'Admission':   { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', dot: '#3b82f6' },
+  'Activation':  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', dot: '#22c55e' },
+  'Learning':    { bg: '#fefce8', border: '#fde68a', text: '#a16207', dot: '#eab308' },
+  'Research':    { bg: '#fdf4ff', border: '#e9d5ff', text: '#7e22ce', dot: '#a855f7' },
+  'Submission':  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c', dot: '#f97316' },
+  'Conferment':  { bg: '#f0fdfa', border: '#99f6e4', text: '#0f766e', dot: '#14b8a6' },
+  'Alumni':      { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#f43f5e' },
+};
+
+function LifecycleSelector({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = value || 'Admission';
+  const sc = STAGE_COLORS[selected];
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Trigger button — selected stage ka color dikhao */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '9px 12px', borderRadius: '10px', cursor: 'pointer',
+          fontFamily: 'inherit', fontSize: '13px', fontWeight: 700,
+          background: sc.bg, border: `1.5px solid ${sc.border}`, color: sc.text,
+          boxShadow: `0 2px 8px ${sc.dot}22`, transition: 'all 0.15s',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{
+            width: '9px', height: '9px', borderRadius: '50%',
+            background: sc.dot, boxShadow: `0 0 0 3px ${sc.dot}33`, flexShrink: 0,
+          }} />
+          {selected}
+        </span>
+        {/* Arrow */}
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: 'transform 0.15s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+          <path d="M2 4l4 4 4-4" stroke={sc.text} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+
+      {/* Dropdown list */}
+      {open && (
+        <div
+          style={{
+            position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, zIndex: 999,
+            background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.12)', overflow: 'hidden',
+          }}
+          onMouseLeave={() => setOpen(false)}
+        >
+          {JOURNEY_STAGES.map((stage, i) => {
+            const c = STAGE_COLORS[stage];
+            const isActive = stage === selected;
+            return (
+              <div
+                key={stage}
+                onMouseDown={() => { onChange(stage); setOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 14px', cursor: 'pointer', fontSize: '13px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? c.text : '#334155',
+                  background: isActive ? c.bg : 'white',
+                  borderBottom: i < JOURNEY_STAGES.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = c.bg; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'white'; }}
+              >
+                <span style={{
+                  width: '9px', height: '9px', borderRadius: '50%', flexShrink: 0,
+                  background: c.dot,
+                  boxShadow: isActive ? `0 0 0 3px ${c.dot}33` : 'none',
+                }} />
+                <span style={{ flex: 1 }}>{stage}</span>
+                {isActive && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7l3 3 6-6" stroke={c.text} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 function SectionLabel({ children }) {
   return (
     <p style={{ fontSize: '10px', fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
@@ -169,15 +375,17 @@ function fmtINR(n) {
   return '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
 }
 
-export default function StudentModal({ initial, liveRate, onClose, onSave }) {
+export default function StudentModal({ initial, liveRate, totalPaid = 0, onClose, onSave }) {
   const isEdit = !!initial;
   const [form, setForm]     = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [emailLookup, setEmailLookup] = useState({ loading: false, found: false, notFound: false });
 
   useEffect(() => {
     if (initial) {
       setForm({ ...EMPTY, ...initial,
+        journeyStatus:  initial.journeyStatus  ?? 'Admission',
         totalFee:       initial.totalFee       ?? '',
         exchangeRate:   initial.exchangeRate   ?? '83',
         uniFee:         initial.uniFee         ?? '',
@@ -191,6 +399,39 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
     }
   }, [initial, liveRate]);
 
+  // Email se auto-fill: valid email type karne ke baad 600ms wait karke lookup karo
+  useEffect(() => {
+    if (isEdit) return; // edit mode mein auto-fill nahi
+    const email = form.email.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailLookup({ loading: false, found: false, notFound: false });
+      return;
+    }
+    setEmailLookup(p => ({ ...p, loading: true, found: false, notFound: false }));
+    const timer = setTimeout(async () => {
+      try {
+        const { default: api } = await import('../../api/axios');
+        const { data } = await api.get(`/api/students/lookup/email?email=${encodeURIComponent(email)}`);
+        if (data.success && data.data) {
+          const s = data.data;
+          setForm(p => ({
+            ...p,
+            name:     s.name     || p.name,
+            phone:    s.phone    || p.phone,
+            region:   s.region   || p.region,
+            program:  s.program  || p.program,
+            university: s.university || p.university,
+            // payment fields blank rakhte hain — nayi course ke liye fresh fill karo
+          }));
+          setEmailLookup({ loading: false, found: true, notFound: false });
+        }
+      } catch {
+        setEmailLookup({ loading: false, found: false, notFound: true });
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [form.email, isEdit]);
+
   const set = (k, v) => {
     setForm((p) => ({ ...p, [k]: v }));
     setErrors((p) => ({ ...p, [k]: '' }));
@@ -200,11 +441,12 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
     const rate       = Number(form.exchangeRate)  || 0;
     const totalFee   = Number(form.totalFee)       || 0;
     const totalFeeINR= totalFee * rate;
-    const paid       = Number(form.initPayAmt)     || 0;
+    // Edit mode mein actual payments use karo, add mode mein form ka initPayAmt
+    const paid       = isEdit ? totalPaid : (Number(form.initPayAmt) || 0);
     const bankCharge = Number(form.initBankCharge) || 0;
     const gatewayFee = Number(form.initGatewayFee) || 0;
     const otherDed   = Number(form.initOtherDed)   || 0;
-    const totalDeductions = bankCharge + gatewayFee + otherDed;
+    const totalDeductions = isEdit ? 0 : (bankCharge + gatewayFee + otherDed);
     const netReceived    = paid - totalDeductions;
     const netReceivedINR = netReceived * rate;
     const uniFee         = Number(form.uniFee)         || 0;
@@ -215,7 +457,7 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
     const remainingBalance = totalFee - paid;
     const netProfit        = netReceived - totalCosts;
     return { totalFeeINR, totalDeductions, netReceived, netReceivedINR, totalCosts, remainingBalance, netProfit, paid, totalFee };
-  }, [form]);
+  }, [form, isEdit, totalPaid]);
 
   const validate = () => {
     const e = {};
@@ -239,6 +481,7 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
         registrationDate: form.registrationDate, region: form.region.trim(), program: form.program.trim(),
         university: form.university.trim(), totalFee: Number(form.totalFee),
         exchangeRate: Number(form.exchangeRate),
+        journeyStatus: form.journeyStatus || 'Admission',
         uniFee: Number(form.uniFee) || 0, consultantComm: Number(form.consultantComm) || 0,
         thesisCost: Number(form.thesisCost) || 0, shipmentCost: Number(form.shipmentCost) || 0,
         ...(!isEdit && {
@@ -277,11 +520,49 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
                 <StyledInput type="date" value={form.registrationDate} onChange={e => set('registrationDate', e.target.value)} />
               </Field>
               <Field label="Email" error={errors.email}>
-                <StyledInput type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="student@email.com" />
+                <div style={{ position: 'relative' }}>
+                  <StyledInput
+                    type="email"
+                    value={form.email}
+                    onChange={e => set('email', e.target.value)}
+                    placeholder="student@email.com"
+                    style={{ paddingRight: emailLookup.loading || emailLookup.found || emailLookup.notFound ? '90px' : undefined }}
+                  />
+                  {!isEdit && emailLookup.loading && (
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 7px' }}>
+                      Searching…
+                    </span>
+                  )}
+                  {!isEdit && emailLookup.found && (
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.1)', borderRadius: '6px', padding: '3px 7px' }}>
+                      ✓ Auto-filled
+                    </span>
+                  )}
+                  {!isEdit && emailLookup.notFound && form.email.includes('@') && (
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', fontWeight: 700, color: '#94a3b8', background: '#f1f5f9', borderRadius: '6px', padding: '3px 7px' }}>
+                      New student
+                    </span>
+                  )}
+                </div>
+                {!isEdit && emailLookup.found && (
+                  <p style={{ fontSize: '11px', color: '#10b981', marginTop: '2px' }}>
+                    📋 Details auto-filled — sirf payment fields fresh bharni hain
+                  </p>
+                )}
               </Field>
               <Field label="Phone" error={errors.phone}>
                 <StyledInput type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+44 7700 900123" />
               </Field>
+
+              {/* Lifecycle — add aur edit dono mode mein dikhao */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <Field label="Lifecycle / Journey Stage">
+                  <LifecycleSelector
+                    value={form.journeyStatus || 'Admission'}
+                    onChange={v => set('journeyStatus', v)}
+                  />
+                </Field>
+              </div>
             </div>
           </div>
 
@@ -290,14 +571,12 @@ export default function StudentModal({ initial, liveRate, onClose, onSave }) {
             <SectionLabel>🎓 Academic Details</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
 
-              {/* Region — SelectWithOther */}
+              {/* Region — SearchableCountry */}
               <Field label="Region *" error={errors.region}>
-                <SelectWithOther
+                <SearchableCountry
                   value={form.region}
                   onChange={v => set('region', v)}
-                  options={REGIONS}
-                  placeholder="Select region"
-                  inputPlaceholder="e.g. Middle East, Africa..."
+                  error={errors.region}
                 />
               </Field>
 

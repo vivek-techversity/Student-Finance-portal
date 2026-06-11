@@ -2,6 +2,19 @@ const Student = require('../models/Student');
 const Payment = require('../models/Payment');
 const Note = require('../models/Note');
 
+// GET student by email (for auto-fill in Add Student form)
+const getStudentByEmail = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ message: 'Email required.' });
+    const student = await Student.findOne({ email: email.toLowerCase().trim() });
+    if (!student) return res.status(404).json({ message: 'Not found.' });
+    res.json({ success: true, data: student });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // GET all students
 const getStudents = async (req, res) => {
   try {
@@ -40,10 +53,11 @@ const createStudent = async (req, res) => {
 
     let initialPayment = null;
     if (initPayAmt && Number(initPayAmt) > 0) {
-      const today = new Date().toISOString().split('T')[0];
+      // Registration date use karo — aaj ka date nahi
+      const paymentDate = student.registrationDate || new Date().toISOString().split('T')[0];
       initialPayment = await Payment.create({
         studentId: student._id,
-        date: today,
+        date: paymentDate,
         amountUSD: Number(initPayAmt),
         exchangeRate: student.exchangeRate || 83,
         method: initPayMethod || 'Bank Transfer',
@@ -98,6 +112,7 @@ const deleteStudent = async (req, res) => {
 module.exports = {
   getStudents,
   getStudent,
+  getStudentByEmail,
   createStudent,
   updateStudent,
   deleteStudent,

@@ -40,6 +40,13 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ── Journey / Lifecycle Status ─────────────
+    journeyStatus: {
+      type: String,
+      enum: ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni'],
+      default: 'Admission',
+    },
+
     // ── Fees ──────────────────────────────
     totalFee: {
       type: Number,

@@ -18,7 +18,7 @@ export default function StudentTable({ students, calcs, onView, onEdit, onDelete
       <table className="w-full text-sm">
         <thead>
           <tr style={{ background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)', borderBottom: '1px solid #e2e8f0' }}>
-            {['Student', 'University', 'Region', 'Program', 'Total Fee', 'Received', 'Outstanding', 'Status', 'Last Payment', ''].map((h) => (
+            {['Student', 'University', 'Region', 'Program', 'Lifecycle', 'Total Fee', 'Received', 'Outstanding', 'Status', 'Last Payment', ''].map((h) => (
               <th key={h}
                 className="px-4 py-3.5 text-left text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
                 {h}
@@ -65,12 +65,44 @@ export default function StudentTable({ students, calcs, onView, onEdit, onDelete
 
                 <td className="px-4 py-3.5 text-slate-500 text-xs whitespace-nowrap">{s.program}</td>
 
-                <td className="px-4 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{fmt$(s.totalFee)}</td>
+                <td className="px-4 py-3.5 whitespace-nowrap">
+                  {s.journeyStatus && (() => {
+                    const STAGE_COLORS = {
+                      'Admission':  { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8', dot: '#3b82f6' },
+                      'Activation': { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', dot: '#22c55e' },
+                      'Learning':   { bg: '#fefce8', border: '#fde68a', text: '#a16207', dot: '#eab308' },
+                      'Research':   { bg: '#fdf4ff', border: '#e9d5ff', text: '#7e22ce', dot: '#a855f7' },
+                      'Submission': { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c', dot: '#f97316' },
+                      'Conferment': { bg: '#f0fdfa', border: '#99f6e4', text: '#0f766e', dot: '#14b8a6' },
+                      'Alumni':     { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#f43f5e' },
+                    };
+                    const sc = STAGE_COLORS[s.journeyStatus] || { bg: '#f8fafc', border: '#e2e8f0', text: '#94a3b8', dot: '#cbd5e1' };
+                    return (
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        fontSize: '11px', fontWeight: 700,
+                        color: sc.text, background: sc.bg,
+                        borderRadius: '12px', padding: '4px 9px',
+                        border: `1px solid ${sc.border}`,
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
+                        {s.journeyStatus}
+                      </span>
+                    );
+                  })()}
+                </td>
 
+                {/* Total Fee */}
+                <td className="px-4 py-3.5 font-bold whitespace-nowrap" style={{ color: '#0f172a' }}>
+                  {fmt$(s.totalFee)}
+                </td>
+
+                {/* Received */}
                 <td className="px-4 py-3.5 font-bold whitespace-nowrap" style={{ color: '#10b981' }}>
                   {fmt$(c.totalReceived)}
                 </td>
 
+                {/* Outstanding */}
                 <td className="px-4 py-3.5 font-bold whitespace-nowrap"
                   style={{ color: c.outstanding > 0 ? '#ef4444' : '#10b981' }}>
                   {fmt$(c.outstanding)}

@@ -197,6 +197,7 @@ export default function AppLayout() {
         <StudentModal
           initial={editStudent}
           liveRate={liveRate}
+          totalPaid={editStudent ? (calcs[editStudent._id]?.totalReceived ?? 0) : 0}
           onClose={() => { setShowStudentModal(false); setEditStudent(null); }}
           onSave={handleSaveStudent}
         />
