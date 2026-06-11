@@ -43,7 +43,7 @@ const studentSchema = new mongoose.Schema(
     // ── Journey / Lifecycle Status ─────────────
     journeyStatus: {
       type: String,
-      enum: ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni'],
+      enum: ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni', 'Ghost', 'Refund', 'Admission Cancelled'],
       default: 'Admission',
     },
 

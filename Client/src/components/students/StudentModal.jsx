@@ -46,7 +46,7 @@ const PROGRAMS = [
   'Certification Programs',
 ];
 const METHODS  = ['Bank Transfer', 'UPI', 'PayPal', 'EMI'];
-const JOURNEY_STAGES = ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni'];
+const JOURNEY_STAGES = ['Admission', 'Activation', 'Learning', 'Research', 'Submission', 'Conferment', 'Alumni', 'Ghost', 'Refund', 'Admission Cancelled'];
 
 const inputStyle = {
   border: '1px solid #e2e8f0',
@@ -275,7 +275,10 @@ const STAGE_COLORS = {
   'Research':    { bg: '#fdf4ff', border: '#e9d5ff', text: '#7e22ce', dot: '#a855f7' },
   'Submission':  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c', dot: '#f97316' },
   'Conferment':  { bg: '#f0fdfa', border: '#99f6e4', text: '#0f766e', dot: '#14b8a6' },
-  'Alumni':      { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#f43f5e' },
+  'Alumni':             { bg: '#fff1f2', border: '#fecdd3', text: '#be123c', dot: '#f43f5e' },
+  'Ghost':              { bg: '#f8fafc', border: '#cbd5e1', text: '#475569', dot: '#94a3b8' },
+  'Refund':             { bg: '#fef2f2', border: '#fecaca', text: '#991b1b', dot: '#ef4444' },
+  'Admission Cancelled':{ bg: '#f1f5f9', border: '#cbd5e1', text: '#334155', dot: '#475569' },
 };
 
 function LifecycleSelector({ value, onChange }) {
