@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 import { useAppData } from '../components/layout/AppLayout';
 import StatsGrid from '../components/dashboard/StatsGrid';
-import TargetCard from '../components/dashboard/TargetCard';
+import ExchangeRateCard from '../components/dashboard/ExchangeRateCard';
 import OverdueCard from '../components/dashboard/OverdueCard';
 import RegionBarChart from '../components/dashboard/RegionBarChart';
 import MethodDonut from '../components/dashboard/MethodDonut';
 import RevenueTrendChart from '../components/dashboard/RevenueTrendChart';
+import HeroSummaryCard from '../components/dashboard/HeroSummaryCard';
+import PaymentHeatmap from '../components/dashboard/PaymentHeatmap';
+import UniversityLeaderboard from '../components/dashboard/UniversityLeaderboard';
 import { fmtDate, fmt$ } from '../utils/formatters';
 
 // Payment method icons — SVG, no emoji
@@ -107,8 +110,7 @@ export default function DashboardPage() {
       const d = new Date(p.date);
       const m = months.find((mo) => mo.year === d.getFullYear() && mo.month === d.getMonth());
       if (m) {
-        const net = p.amountUSD - (p.bankCharge || 0) - (p.gatewayFee || 0) - (p.otherDeduction || 0);
-        m.total += net;
+        m.total += p.amountUSD;
       }
     });
     return months;
@@ -165,6 +167,11 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Hero — This Month summary with sparkline + target */}
+      <div className="mb-6">
+        <HeroSummaryCard thisMonth={thisMonth} target={target} tPct={tPct} liveRate={liveRate} series={monthlySeries} />
+      </div>
+
       {/* Stats Grid */}
       <StatsGrid totals={totals} liveRate={liveRate} trends={trends} />
 
@@ -173,15 +180,21 @@ export default function DashboardPage() {
         <RevenueTrendChart series={monthlySeries} />
       </div>
 
-      {/* Target + Overdue */}
+      {/* Exchange Rate + Overdue */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <TargetCard thisMonth={thisMonth} target={target} tPct={tPct} liveRate={liveRate} />
+        <ExchangeRateCard liveRate={liveRate} payments={payments} />
         <OverdueCard
           overdueStudents={overdueStudents}
           calcs={calcs}
           onView={onViewStudent}
           onAddPayment={onAddPaymentFor}
         />
+      </div>
+
+      {/* University Leaderboard + Payment Heatmap */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <UniversityLeaderboard students={students} calcs={calcs} />
+        <PaymentHeatmap payments={payments} />
       </div>
 
       {/* Charts row */}

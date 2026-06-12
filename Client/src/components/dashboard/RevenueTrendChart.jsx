@@ -1,4 +1,4 @@
-import { fmt$, fmtShort } from '../../utils/formatters';
+import { fmt$ } from '../../utils/formatters';
 
 const T = {
   border: '#E7E4E0',
@@ -12,6 +12,14 @@ const T = {
   grid:   '#F0EDE9',
 };
 
+/** Compact label for chart points — always short, no stray decimals.
+ *  $0, $474, $1.6k, $7.9k — consistent style regardless of magnitude. */
+function fmtPoint(v) {
+  const n = Number(v || 0);
+  if (Math.abs(n) >= 1000) return '$' + (n / 1000).toFixed(1) + 'k';
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
 /**
  * Props:
  *   series — [{ label, total }] last N months, oldest → newest
@@ -21,7 +29,7 @@ export default function RevenueTrendChart({ series = [] }) {
   const H = 200;
   const PAD_L = 8;
   const PAD_R = 8;
-  const PAD_T = 16;
+  const PAD_T = 30;
   const PAD_B = 28;
 
   const values = series.map((s) => s.total);
@@ -59,7 +67,7 @@ export default function RevenueTrendChart({ series = [] }) {
           </div>
           <div>
             <p className="text-sm font-semibold" style={{ color: T.text }}>Revenue Trend</p>
-            <p className="text-[11px]" style={{ color: T.label }}>Net received (USD) · last {series.length} months</p>
+            <p className="text-[11px]" style={{ color: T.label }}>Revenue (USD) · last {series.length} months</p>
           </div>
         </div>
 
@@ -102,19 +110,29 @@ export default function RevenueTrendChart({ series = [] }) {
           )}
 
           {/* Points + labels */}
-          {points.map((p, i) => (
-            <g key={i}>
-              <circle cx={p.x} cy={p.y} r={i === points.length - 1 ? 4 : 3} fill="white" stroke={T.accent} strokeWidth="2" />
-              <text x={p.x} y={H - 8} textAnchor="middle" fontSize="11" fontWeight="600" fill={T.label}>
-                {p.label}
-              </text>
-              {i === points.length - 1 && (
-                <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize="11" fontWeight="800" fill={T.text}>
-                  {fmtShort(p.total)}
+          {points.map((p, i) => {
+            const isFirst = i === 0;
+            const isLast = i === points.length - 1;
+            const anchor = isFirst ? 'start' : isLast ? 'end' : 'middle';
+            return (
+              <g key={i}>
+                <circle cx={p.x} cy={p.y} r={isLast ? 4 : 3} fill="white" stroke={T.accent} strokeWidth="2" />
+                <text x={p.x} y={H - 8} textAnchor={anchor} fontSize="11" fontWeight="600" fill={T.label}>
+                  {p.label}
                 </text>
-              )}
-            </g>
-          ))}
+                <text
+                  x={p.x}
+                  y={p.y - 12}
+                  textAnchor={anchor}
+                  fontSize="10.5"
+                  fontWeight="700"
+                  fill={T.sub}
+                >
+                  {fmtPoint(p.total)}
+                </text>
+              </g>
+            );
+          })}
         </svg>
       </div>
     </div>

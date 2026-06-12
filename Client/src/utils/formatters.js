@@ -62,11 +62,13 @@ export function calcStudent(student, payments) {
   const sid = student._id || student.id; // MongoDB uses _id
   const sp = payments.filter((p) => (p.studentId?._id || p.studentId) === sid);
 
-  const totalReceived = sp.reduce((a, p) => a + p.amountUSD, 0);
   const totalDeductions = sp.reduce(
     (a, p) => a + (p.bankCharge || 0) + (p.gatewayFee || 0) + (p.otherDeduction || 0),
     0
   );
+  // totalReceived = gross (student ne kitna bheja) — table/detail me yahi dikhega
+  const totalReceived = sp.reduce((a, p) => a + p.amountUSD, 0);
+  // netReceivedUSD = charges katne ke baad — sirf profit calc ke liye use hoga
   const netReceivedUSD = totalReceived - totalDeductions;
 
   const netReceivedINR = sp.reduce((a, p) => {

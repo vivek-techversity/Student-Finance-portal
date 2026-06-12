@@ -87,12 +87,12 @@ const Icons = {
 };
 
 const NAV_ITEMS = [
+  { to: '/founder-report', Icon: Icons.FounderReport, label: 'Founder Report' },
   { to: '/',             Icon: Icons.Dashboard,    label: 'Dashboard',   end: true },
   { to: '/students',     Icon: Icons.Students,     label: 'Students' },
   { to: '/transactions', Icon: Icons.Transactions, label: 'Transactions' },
   { to: '/analytics',    Icon: Icons.Analytics,    label: 'Analytics' },
   { to: '/overdue',      Icon: Icons.Overdue,      label: 'Overdue',     badge: true },
-  { to: '/founder-report', Icon: Icons.FounderReport, label: 'Founder Report' },
 ];
 
 const ACTION_ITEMS = [
