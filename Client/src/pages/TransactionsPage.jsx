@@ -177,7 +177,7 @@ export default function TransactionsPage() {
             {/* Thin semantic accent top */}
             <div style={{ height: '3px', background: SUMMARY_ACCENT[c.key] }} />
             <div style={{ padding: '16px' }}>
-              <p style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 500, color: T.label, letterSpacing: '0.01em', marginBottom: '6px' }}>
                 {c.label}
               </p>
               <p style={{ fontSize: '20px', fontWeight: 800, color: c.valueColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', margin: 0 }}>
@@ -280,7 +280,7 @@ export default function TransactionsPage() {
               {['Student', 'Date & Method', 'Gross', 'Deductions', 'Net', 'Note'].map((h) => (
                 <p
                   key={h}
-                  style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}
+                  style={{ fontSize: '11px', fontWeight: 500, color: T.label, letterSpacing: '0.01em', margin: 0 }}
                 >
                   {h}
                 </p>

@@ -67,8 +67,8 @@ export default function StudentTable({ students, calcs, onView, onEdit, onDelete
             {HEADERS.map((h) => (
               <th key={h} style={{
                 padding: '10px 16px', textAlign: 'left',
-                fontSize: '10px', fontWeight: 700, color: T.theadText,
-                textTransform: 'uppercase', letterSpacing: '0.08em',
+                fontSize: '11px', fontWeight: 500, color: T.theadText,
+                letterSpacing: '0.01em',
                 whiteSpace: 'nowrap',
               }}>
                 {h}

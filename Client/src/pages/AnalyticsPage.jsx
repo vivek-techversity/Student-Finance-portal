@@ -102,7 +102,7 @@ function Section({ iconKey, title, subtitle, children }) {
           {SectionIcons[iconKey]}
         </div>
         <div>
-          <p style={{ fontSize: '13px', fontWeight: 700, color: T.text, margin: 0 }}>{title}</p>
+          <p style={{ fontSize: '14px', fontWeight: 600, color: T.text, margin: 0, letterSpacing: '-0.01em' }}>{title}</p>
           {subtitle && <p style={{ fontSize: '11px', color: T.label, margin: 0 }}>{subtitle}</p>}
         </div>
       </div>
@@ -209,10 +209,10 @@ export default function AnalyticsPage() {
           >
             <div style={{ height: '3px', background: CARD_ACCENTS[card.key] }} />
             <div style={{ padding: '16px' }}>
-              <p style={{ fontSize: '10px', fontWeight: 700, color: T.label, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 500, color: T.label, letterSpacing: '0.01em', marginBottom: '6px' }}>
                 {card.label}
               </p>
-              <p style={{ fontSize: '20px', fontWeight: 800, color: card.valueColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', margin: 0 }}>
+              <p style={{ fontSize: '22px', fontWeight: 800, color: card.valueColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em', margin: 0 }}>
                 {card.value}
               </p>
               <p style={{ fontSize: '11px', color: T.label, marginTop: '2px' }}>{card.sub}</p>
@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
                 <div style={{ flex: 1, background: T.barTrack, borderRadius: '99px', height: '28px', overflow: 'hidden' }}>
                   <div
                     style={{
-                      height: '100%', borderRadius: '99px', backgroundColor: T.text,
+                      height: '100%', borderRadius: '99px', backgroundColor: '#4F46E5',
                       display: 'flex', alignItems: 'center', paddingLeft: '12px',
                       width: `${Math.max(4, (m.total / maxMonthly) * 100)}%`,
                       transition: 'width 0.5s ease',
@@ -285,7 +285,7 @@ export default function AnalyticsPage() {
                 <thead>
                   <tr>
                     {['Region', 'Received', 'Outstanding', 'Students'].map((h, i) => (
-                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
+                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 500, color: T.label, textAlign: i === 0 ? 'left' : 'right', fontSize: '11px', letterSpacing: '0.01em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -329,7 +329,7 @@ export default function AnalyticsPage() {
                 <thead>
                   <tr>
                     {['Program', 'Received', 'Profit', 'Students'].map((h, i) => (
-                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
+                      <th key={h} style={{ paddingBottom: '8px', fontWeight: 500, color: T.label, textAlign: i === 0 ? 'left' : 'right', fontSize: '11px', letterSpacing: '0.01em' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -371,7 +371,7 @@ export default function AnalyticsPage() {
               <thead>
                 <tr>
                   {['Method', 'Total', 'Txns', 'Avg'].map((h, i) => (
-                    <th key={h} style={{ paddingBottom: '8px', fontWeight: 700, color: T.label, textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '9px' }}>{h}</th>
+                    <th key={h} style={{ paddingBottom: '8px', fontWeight: 500, color: T.label, textAlign: i === 0 ? 'left' : 'right', fontSize: '11px', letterSpacing: '0.01em' }}>{h}</th>
                   ))}
                 </tr>
               </thead>

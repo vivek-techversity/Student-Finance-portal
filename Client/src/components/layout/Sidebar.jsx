@@ -36,6 +36,12 @@ const Icons = {
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
   ),
+  FounderReport: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10 12 5 2 10l10 5 10-5Z"/>
+      <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+    </svg>
+  ),
   AddStudent: () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -86,6 +92,7 @@ const NAV_ITEMS = [
   { to: '/transactions', Icon: Icons.Transactions, label: 'Transactions' },
   { to: '/analytics',    Icon: Icons.Analytics,    label: 'Analytics' },
   { to: '/overdue',      Icon: Icons.Overdue,      label: 'Overdue',     badge: true },
+  { to: '/founder-report', Icon: Icons.FounderReport, label: 'Founder Report' },
 ];
 
 const ACTION_ITEMS = [
@@ -147,7 +154,7 @@ export default function Sidebar({ overdueCount, onAddStudent, onAddPayment, onSe
       {/* ── Nav ──────────────────────────────────────── */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         <p
-          className="text-[10px] font-semibold uppercase tracking-widest px-2 mb-2"
+          className="text-[10px] font-semibold uppercase tracking-wider px-2 mb-2"
           style={{ color: S.sectionLabel }}
         >
           Main
@@ -191,7 +198,7 @@ export default function Sidebar({ overdueCount, onAddStudent, onAddPayment, onSe
         ))}
 
         <p
-          className="text-[10px] font-semibold uppercase tracking-widest px-2 pt-4 mb-2"
+          className="text-[10px] font-semibold uppercase tracking-wider px-2 pt-4 mb-2"
           style={{ color: S.sectionLabel }}
         >
           Actions

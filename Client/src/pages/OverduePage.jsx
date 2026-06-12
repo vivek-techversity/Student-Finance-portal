@@ -141,7 +141,7 @@ export default function OverduePage() {
                   {HEADERS.map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap"
+                      className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap"
                       style={{ color: T.label }}
                     >
                       {h}

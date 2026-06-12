@@ -218,7 +218,7 @@ export default function AppLayout() {
             <p className="text-xs text-stone-400 mb-4">Set your USD collection goal for this month</p>
 
             <div className="mb-4">
-              <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-1.5">
+              <label className="block text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1.5">
                 Target Amount (USD)
               </label>
               <input

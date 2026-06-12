@@ -130,19 +130,19 @@ export default function StatsGrid({ totals, liveRate }) {
 
             {/* Label */}
             <p
-              className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-              style={{ color: T.labelColor }}
+              className="text-[11px] font-medium mb-1.5 truncate"
+              style={{ color: T.labelColor, letterSpacing: '0.01em' }}
             >
               {c.label}
             </p>
 
             {/* Value — tabular, bold, large */}
             <p
-              className="text-xl font-bold leading-tight mb-0.5"
+              className="text-[22px] font-bold leading-none mb-1"
               style={{
                 color: T.valueColor,
                 fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '-0.02em',
+                letterSpacing: '-0.03em',
               }}
             >
               {c.value}
@@ -151,7 +151,7 @@ export default function StatsGrid({ totals, liveRate }) {
             {/* Sub — INR or status */}
             <p
               className="text-[11px] truncate"
-              style={{ color: T.subColor }}
+              style={{ color: T.subColor, fontVariantNumeric: 'tabular-nums' }}
             >
               {c.sub}
             </p>

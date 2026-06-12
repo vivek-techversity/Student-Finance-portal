@@ -35,6 +35,12 @@ const PageIcons = {
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
   ),
+  founderReport: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10 12 5 2 10l10 5 10-5Z"/>
+      <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+    </svg>
+  ),
   detail: (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -56,6 +62,7 @@ const PAGE_META = {
   '/transactions': { icon: 'transactions', title: 'Transactions',    crumb: null },
   '/analytics':    { icon: 'analytics',    title: 'Analytics',       crumb: null },
   '/overdue':      { icon: 'overdue',      title: 'Overdue',         crumb: null },
+  '/founder-report': { icon: 'founderReport', title: 'Founder Report', crumb: null },
 };
 
 export default function Topbar({ liveRate, rateLoading, onRefreshRate, students = [], payments = [], calcs = {} }) {

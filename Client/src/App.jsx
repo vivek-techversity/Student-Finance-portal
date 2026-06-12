@@ -9,6 +9,7 @@ import StudentDetailPage from './pages/StudentDetailPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import OverduePage from './pages/OverduePage';
 import TransactionsPage from './pages/TransactionsPage';
+import FounderReportPage from './pages/FounderReportPage';
 import Spinner from './components/ui/Spinner';
 
 // ── Auth guard: redirect to /login if not logged in ──────────
@@ -68,6 +69,7 @@ export default function App() {
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="overdue" element={<OverduePage />} />
               <Route path="transactions" element={<TransactionsPage />} />
+              <Route path="founder-report" element={<FounderReportPage />} />
             </Route>
 
             {/* Fallback */}

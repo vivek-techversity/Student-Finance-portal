@@ -15,35 +15,66 @@ const EMPTY = {
   note:           '',
 };
 
-function Field({ label, error, children }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-        {label}
-      </label>
-      {children}
-      {error && <p className="text-[11px] text-red-500">{error}</p>}
-    </div>
-  );
-}
+// ── Warm neutral design tokens (matches StudentModal exactly) ─────────────────
+const T = {
+  inputBg:          '#F5F3F0',
+  inputBorder:      '#D9D5D0',
+  inputFocusBorder: '#1C1917',
+  inputFocusShadow: '0 0 0 3px rgba(28,25,23,0.08)',
+  inputText:        '#1C1917',
+  sectionBg:        '#FAFAF9',
+  sectionBorder:    '#E7E4E0',
+  labelColor:       '#A8A29E',
+  divider:          '#E7E4E0',
+  cancelBg:         '#EAE8E4',
+  cancelText:       '#78716C',
+  saveBg:           '#1C1917',
+  saveHover:        '#292524',
+};
 
-function Input({ className = '', ...props }) {
+const inputBase = {
+  border: `1px solid ${T.inputBorder}`,
+  borderRadius: '10px',
+  padding: '9px 12px',
+  fontSize: '13px',
+  color: T.inputText,
+  background: T.inputBg,
+  outline: 'none',
+  width: '100%',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
+  fontFamily: 'inherit',
+};
+
+// ── Styled Input ──────────────────────────────────────────────────────────────
+function StyledInput({ style = {}, ...props }) {
+  const [focused, setFocused] = useState(false);
   return (
     <input
-      className={`border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 bg-slate-50
-        placeholder:text-slate-400 outline-none transition-all
-        focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 ${className}`}
+      style={{
+        ...inputBase,
+        ...(focused ? { borderColor: T.inputFocusBorder, boxShadow: T.inputFocusShadow, background: '#fff' } : {}),
+        ...style,
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       {...props}
     />
   );
 }
 
-function Select({ className = '', children, ...props }) {
+// ── Styled Select ─────────────────────────────────────────────────────────────
+function StyledSelect({ children, style = {}, ...props }) {
+  const [focused, setFocused] = useState(false);
   return (
     <select
-      className={`border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 bg-slate-50
-        outline-none transition-all focus:bg-white focus:ring-2 focus:ring-indigo-500/20
-        focus:border-indigo-400 cursor-pointer ${className}`}
+      style={{
+        ...inputBase,
+        cursor: 'pointer',
+        ...(focused ? { borderColor: T.inputFocusBorder, boxShadow: T.inputFocusShadow, background: '#fff' } : {}),
+        ...style,
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       {...props}
     >
       {children}
@@ -51,9 +82,46 @@ function Select({ className = '', children, ...props }) {
   );
 }
 
+// ── Field wrapper ─────────────────────────────────────────────────────────────
+function Field({ label, error, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      <label style={{ fontSize: '11px', fontWeight: 500, color: T.labelColor, letterSpacing: '0.01em' }}>
+        {label}
+      </label>
+      {children}
+      {error && <p style={{ fontSize: '11px', color: '#EF4444' }}>{error}</p>}
+    </div>
+  );
+}
+
+// ── Section Label (matches StudentModal) ──────────────────────────────────────
+function SectionLabel({ icon, children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
+      <div style={{
+        width: '22px', height: '22px', borderRadius: '6px',
+        background: '#EAE8E4', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#57534E', flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <p style={{ fontSize: '10px', fontWeight: 800, color: '#78716C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+// ── Icons ─────────────────────────────────────────────────────────────────────
+const StudentIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+const PayIcon     = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>;
+const DeductIcon  = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const NoteIcon    = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
+
 /**
  * Props:
- *   students  — all students array (for student selector)
+ *   students  — all students array
  *   pre       — pre-selected student object | null
  *   initial   — payment object for edit mode | null
  *   liveRate  — number | null
@@ -70,7 +138,6 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
   useEffect(() => {
     const todayStr = new Date().toISOString().split('T')[0];
     if (isEdit && initial) {
-      // Edit mode — prefill from existing payment
       setForm({
         studentId:      initial.studentId?._id || initial.studentId || '',
         date:           initial.date           || todayStr,
@@ -83,7 +150,6 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
         note:           initial.note           || '',
       });
     } else {
-      // Add mode
       setForm({
         ...EMPTY,
         date:         todayStr,
@@ -100,12 +166,12 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
 
   const validate = () => {
     const e = {};
-    if (!form.studentId)                                           e.studentId    = 'Select a student';
-    if (!form.date)                                                e.date         = 'Required';
+    if (!form.studentId)                                            e.studentId    = 'Select a student';
+    if (!form.date)                                                 e.date         = 'Required';
     if (!form.amountUSD || isNaN(+form.amountUSD) || +form.amountUSD <= 0)
-                                                                   e.amountUSD    = 'Must be > 0';
+                                                                    e.amountUSD    = 'Must be > 0';
     if (!form.exchangeRate || isNaN(+form.exchangeRate) || +form.exchangeRate <= 0)
-                                                                   e.exchangeRate = 'Must be > 0';
+                                                                    e.exchangeRate = 'Must be > 0';
     return e;
   };
 
@@ -131,7 +197,7 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
     }
   };
 
-  // Live INR estimate
+  // Live calculations
   const netUSD =
     Number(form.amountUSD || 0) -
     Number(form.bankCharge || 0) -
@@ -141,6 +207,13 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
 
   const selectedStudent = students?.find((s) => s._id === form.studentId);
 
+  const sectionStyle = {
+    background: T.sectionBg,
+    border: `1px solid ${T.sectionBorder}`,
+    borderRadius: '14px',
+    padding: '16px',
+  };
+
   return (
     <Modal
       open
@@ -148,86 +221,89 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
       title={isEdit ? 'Edit Payment' : 'Record Payment'}
       size="md"
     >
-      <div className="space-y-5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-        {/* ── Student selector ──────────────────── */}
-        <Field label="Student *" error={errors.studentId}>
-          <Select
-            value={form.studentId}
-            onChange={(e) => set('studentId', e.target.value)}
-            disabled={!!pre || isEdit}
-          >
-            <option value="">Select student…</option>
-            {students?.map((s) => (
-              <option key={s._id} value={s._id}>
-                {s.name} — {s.university}
-              </option>
-            ))}
-          </Select>
-          {selectedStudent && (
-            <p className="text-[11px] text-indigo-500 mt-0.5">
-              {selectedStudent.region} · {selectedStudent.program}
-            </p>
-          )}
-        </Field>
-
-        {/* ── Date + Method ─────────────────────── */}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Payment Date *" error={errors.date}>
-            <Input
-              type="date"
-              value={form.date}
-              onChange={(e) => set('date', e.target.value)}
-            />
-          </Field>
-          <Field label="Method">
-            <Select value={form.method} onChange={(e) => set('method', e.target.value)}>
-              {METHODS.map((m) => <option key={m}>{m}</option>)}
-            </Select>
+        {/* ── Student ──────────────────────────────────── */}
+        <div style={sectionStyle}>
+          <SectionLabel icon={StudentIcon}>Student</SectionLabel>
+          <Field label="Student *" error={errors.studentId}>
+            <StyledSelect
+              value={form.studentId}
+              onChange={(e) => set('studentId', e.target.value)}
+              disabled={!!pre || isEdit}
+            >
+              <option value="">Select student…</option>
+              {students?.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name} — {s.university}
+                </option>
+              ))}
+            </StyledSelect>
+            {selectedStudent && (
+              <p style={{ fontSize: '11px', color: '#6366F1', marginTop: '2px' }}>
+                {selectedStudent.region} · {selectedStudent.program}
+              </p>
+            )}
           </Field>
         </div>
 
-        {/* ── Amount + Rate ──────────────────────── */}
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Amount (USD) *" error={errors.amountUSD}>
-            <Input
-              type="number"
-              value={form.amountUSD}
-              onChange={(e) => set('amountUSD', e.target.value)}
-              placeholder="500"
-            />
-          </Field>
-          <Field label="Exchange Rate (₹/USD) *" error={errors.exchangeRate}>
-            <div className="relative">
-              <Input
-                type="number"
-                value={form.exchangeRate}
-                onChange={(e) => set('exchangeRate', e.target.value)}
-                placeholder="83"
-                className="w-full"
+        {/* ── Payment Details ───────────────────────────── */}
+        <div style={sectionStyle}>
+          <SectionLabel icon={PayIcon}>Payment Details</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <Field label="Payment Date *" error={errors.date}>
+              <StyledInput
+                type="date"
+                value={form.date}
+                onChange={(e) => set('date', e.target.value)}
               />
-              {liveRate && (
-                <button
-                  type="button"
-                  onClick={() => set('exchangeRate', liveRate.toFixed(2))}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold
-                    text-indigo-500 hover:text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded"
-                >
-                  Live ₹{liveRate.toFixed(1)}
-                </button>
-              )}
-            </div>
-          </Field>
+            </Field>
+            <Field label="Method">
+              <StyledSelect value={form.method} onChange={(e) => set('method', e.target.value)}>
+                {METHODS.map((m) => <option key={m}>{m}</option>)}
+              </StyledSelect>
+            </Field>
+            <Field label="Amount (USD) *" error={errors.amountUSD}>
+              <StyledInput
+                type="number"
+                value={form.amountUSD}
+                onChange={(e) => set('amountUSD', e.target.value)}
+                placeholder="500"
+              />
+            </Field>
+            <Field label="Exchange Rate (₹/USD) *" error={errors.exchangeRate}>
+              <div style={{ position: 'relative' }}>
+                <StyledInput
+                  type="number"
+                  value={form.exchangeRate}
+                  onChange={(e) => set('exchangeRate', e.target.value)}
+                  placeholder="83"
+                  style={{ paddingRight: liveRate ? '80px' : undefined }}
+                />
+                {liveRate && (
+                  <button
+                    type="button"
+                    onClick={() => set('exchangeRate', liveRate.toFixed(2))}
+                    style={{
+                      position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                      fontSize: '10px', fontWeight: 700, color: '#57534E', background: '#EAE8E4',
+                      border: 'none', borderRadius: '6px', padding: '3px 7px', cursor: 'pointer',
+                    }}
+                  >
+                    Live ₹{liveRate.toFixed(1)}
+                  </button>
+                )}
+              </div>
+            </Field>
+          </div>
         </div>
 
-        {/* ── Deductions ────────────────────────── */}
-        <div>
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-            Deductions (optional)
-          </p>
-          <div className="grid grid-cols-3 gap-3">
+        {/* ── Deductions ────────────────────────────────── */}
+        <div style={{ ...sectionStyle, background: '#F9F8F7', borderColor: '#E0DDD9' }}>
+          <SectionLabel icon={DeductIcon}>Deductions (Optional)</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
             <Field label="Bank Charge">
-              <Input
+              <StyledInput
                 type="number"
                 value={form.bankCharge}
                 onChange={(e) => set('bankCharge', e.target.value)}
@@ -235,7 +311,7 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
               />
             </Field>
             <Field label="Gateway Fee">
-              <Input
+              <StyledInput
                 type="number"
                 value={form.gatewayFee}
                 onChange={(e) => set('gatewayFee', e.target.value)}
@@ -243,7 +319,7 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
               />
             </Field>
             <Field label="Other">
-              <Input
+              <StyledInput
                 type="number"
                 value={form.otherDeduction}
                 onChange={(e) => set('otherDeduction', e.target.value)}
@@ -253,60 +329,81 @@ export default function PaymentModal({ students, pre, initial, liveRate, onClose
           </div>
         </div>
 
-        {/* ── Net summary pill ──────────────────── */}
+        {/* ── Net summary ───────────────────────────────── */}
         {form.amountUSD && Number(form.amountUSD) > 0 && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3
-            flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">
-                Net Received
-              </p>
-              <p className="text-lg font-bold text-emerald-700 mt-0.5">
-                ${netUSD.toFixed(2)}
+          <div style={{
+            borderRadius: '14px', overflow: 'hidden',
+            border: `1px solid ${T.divider}`,
+          }}>
+            <div style={{ padding: '10px 16px', background: '#1C1917' }}>
+              <p style={{ fontSize: '10px', fontWeight: 800, color: '#A8A29E', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Net Summary
               </p>
             </div>
-            {netINR > 0 && (
-              <div className="text-right">
-                <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">
-                  In INR
-                </p>
-                <p className="text-lg font-bold text-emerald-700 mt-0.5">
-                  ₹{Math.round(netINR).toLocaleString('en-IN')}
+            <div style={{ padding: '12px 16px', background: T.sectionBg, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: '11px', color: T.labelColor, marginBottom: '2px' }}>Net Received (USD)</p>
+                <p style={{ fontSize: '18px', fontWeight: 800, color: '#10B981', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                  ${netUSD.toFixed(2)}
                 </p>
               </div>
-            )}
+              {netINR > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '11px', color: T.labelColor, marginBottom: '2px' }}>In INR</p>
+                  <p style={{ fontSize: '18px', fontWeight: 800, color: '#10B981', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                    ₹{Math.round(netINR).toLocaleString('en-IN')}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* ── Note ──────────────────────────────── */}
-        <Field label="Note (optional)">
-          <Input
-            type="text"
-            value={form.note}
-            onChange={(e) => set('note', e.target.value)}
-            placeholder="e.g. Second installment"
-          />
-        </Field>
+        {/* ── Note ──────────────────────────────────────── */}
+        <div style={sectionStyle}>
+          <SectionLabel icon={NoteIcon}>Note (Optional)</SectionLabel>
+          <Field label="Note">
+            <StyledInput
+              type="text"
+              value={form.note}
+              onChange={(e) => set('note', e.target.value)}
+              placeholder="e.g. Second installment"
+            />
+          </Field>
+        </div>
 
-        {/* ── Actions ───────────────────────────── */}
-        <div className="flex justify-end gap-2 pt-1">
+        {/* ── Actions ───────────────────────────────────── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '4px' }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100
-              rounded-lg hover:bg-slate-200 transition-colors"
+            style={{
+              padding: '9px 18px', fontSize: '13px', fontWeight: 600,
+              color: T.cancelText, background: T.cancelBg, border: 'none',
+              borderRadius: '10px', cursor: 'pointer', transition: 'background 0.15s', fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#E0DDD9'}
+            onMouseLeave={e => e.currentTarget.style.background = T.cancelBg}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="px-5 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-lg
-              hover:bg-indigo-600 transition-colors disabled:opacity-60 flex items-center gap-2"
+            style={{
+              padding: '9px 22px', fontSize: '13px', fontWeight: 700,
+              color: 'white', border: 'none', borderRadius: '10px',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              background: saving ? '#78716C' : T.saveBg,
+              opacity: saving ? 0.7 : 1,
+              transition: 'background 0.15s',
+              display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => { if (!saving) e.currentTarget.style.background = T.saveHover; }}
+            onMouseLeave={e => { if (!saving) e.currentTarget.style.background = T.saveBg; }}
           >
             {saving && (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3"
-                  strokeDasharray="32" strokeDashoffset="12"/>
+              <svg style={{ animation: 'spin 1s linear infinite' }} width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12"/>
               </svg>
             )}
             {isEdit ? 'Save Changes' : 'Record Payment'}
