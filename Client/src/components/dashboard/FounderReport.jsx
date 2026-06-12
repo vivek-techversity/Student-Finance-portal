@@ -17,18 +17,9 @@ const TONES = {
   red:   { fg: '#DC2626', accent: '#EF4444', bg: '#FEF2F2' },
 };
 
-/**
- * FounderReport — replicates the founder's spreadsheet-style
- * "Doctorate Admissions | Founder Dashboard" report, restyled
- * to match the app's warm-stone theme (Inter, #FAFAF9 / #1C1917).
- *
- * Props:
- *   students — array of student docs
- *   payments — array of ALL payment docs
- *   calcs    — { [studentId]: calcStudent() result }
- */
+
 export default function FounderReport({ students = [], payments = [], calcs = {} }) {
-  // ── Top-level USD / INR financials ─────────────────────────────
+
   const summary = useMemo(() => {
     let totalRevenue = 0;
     let netReceivedUSD = 0;
@@ -49,7 +40,7 @@ export default function FounderReport({ students = [], payments = [], calcs = {}
     students.forEach((s) => {
       const c = calcs[s._id];
       if (!c) return;
-      totalRevenue += s.totalFee || 0;
+      // totalRevenue students loop me nahi — payments loop me calculate hoga
       netReceivedUSD += c.netReceivedUSD;
       netReceivedINR += c.netReceivedINR;
       netProfitUSD += c.netProfitUSD;
@@ -63,6 +54,7 @@ export default function FounderReport({ students = [], payments = [], calcs = {}
     });
 
     payments.forEach((p) => {
+      totalRevenue += p.amountUSD || 0;  // actual payments ka sum = real revenue
       bankCharges += p.bankCharge || 0;
       gatewayFees += p.gatewayFee || 0;
       otherDeductions += p.otherDeduction || 0;
@@ -105,7 +97,7 @@ export default function FounderReport({ students = [], payments = [], calcs = {}
           extra: 0, // uniFee paid (only used for university table)
         };
       }
-      m[k].revenue += s.totalFee || 0;
+      m[k].revenue += c.totalReceived || 0;  // actual received, not expected fee
       m[k].inrReceived += c.netReceivedINR;
       m[k].students += 1;
       m[k].outstanding += c.outstanding;
@@ -478,9 +470,7 @@ function BankIcon() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Local formatters (whole-number $ to match the report style)
-// ─────────────────────────────────────────────────────────────────
+
 function fmt$0(v) {
   return '$' + Math.round(v || 0).toLocaleString('en-US');
 }

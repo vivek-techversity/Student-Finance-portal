@@ -120,7 +120,7 @@ export default function DashboardPage() {
     const len = monthlySeries.length;
     const cur = monthlySeries[len - 1]?.total || 0;
     const prev = monthlySeries[len - 2]?.total || 0;
-    const pct = prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : (cur > 0 ? 100 : null);
+    const pct = prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : null;
     return { received: pct, profit: pct };
   }, [monthlySeries]);
 

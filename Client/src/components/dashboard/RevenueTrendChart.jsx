@@ -52,7 +52,7 @@ export default function RevenueTrendChart({ series = [] }) {
   const total = values.reduce((a, b) => a + b, 0);
   const current = values[values.length - 1] || 0;
   const previous = values[values.length - 2] || 0;
-  const pctChange = previous !== 0 ? ((current - previous) / Math.abs(previous)) * 100 : (current > 0 ? 100 : 0);
+  const pctChange = previous !== 0 ? ((current - previous) / Math.abs(previous)) * 100 : null;
   const isUp = pctChange >= 0;
 
   return (
@@ -74,14 +74,20 @@ export default function RevenueTrendChart({ series = [] }) {
         <div className="text-right">
           <p className="text-xl font-extrabold tabular-nums" style={{ color: T.text }}>{fmt$(total)}</p>
           <div className="flex items-center justify-end gap-1 mt-0.5">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isUp ? T.positive : T.negative} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-              style={{ transform: isUp ? 'none' : 'rotate(180deg)' }}>
-              <polyline points="18 15 12 9 6 15"/>
-            </svg>
-            <span className="text-[11px] font-bold tabular-nums" style={{ color: isUp ? T.positive : T.negative }}>
-              {Math.abs(pctChange).toFixed(0)}%
-            </span>
-            <span className="text-[11px]" style={{ color: T.label }}>vs last month</span>
+            {pctChange !== null ? (
+              <>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isUp ? T.positive : T.negative} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transform: isUp ? 'none' : 'rotate(180deg)' }}>
+                  <polyline points="18 15 12 9 6 15"/>
+                </svg>
+                <span className="text-[11px] font-bold tabular-nums" style={{ color: isUp ? T.positive : T.negative }}>
+                  {Math.abs(pctChange).toFixed(0)}%
+                </span>
+                <span className="text-[11px]" style={{ color: T.label }}>vs last month</span>
+              </>
+            ) : (
+              <span className="text-[11px] font-bold" style={{ color: T.positive }}>New this month</span>
+            )}
           </div>
         </div>
       </div>

@@ -32,8 +32,8 @@ export default function HeroSummaryCard({ thisMonth, target, tPct, liveRate, ser
   const previous = values[values.length - 2] || 0;
   const pctChange = previous !== 0
     ? ((current - previous) / Math.abs(previous)) * 100
-    : (current > 0 ? 100 : 0);
-  const isUp = pctChange >= 0;
+    : null;
+  const isUp = pctChange !== null && pctChange >= 0;
 
   const remaining = Math.max(0, target - thisMonth);
   const achieved = tPct >= 100;
@@ -76,14 +76,20 @@ export default function HeroSummaryCard({ thisMonth, target, tPct, liveRate, ser
             {series.length > 1 && (
               <span
                 className="inline-flex items-center gap-1 text-sm font-bold tabular-nums"
-                style={{ color: isUp ? T.positive : T.negative }}
+                style={{ color: pctChange !== null ? (isUp ? T.positive : T.negative) : T.positive }}
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isUp ? T.positive : T.negative}
-                  strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ transform: isUp ? 'none' : 'rotate(180deg)' }}>
-                  <polyline points="18 15 12 9 6 15"/>
-                </svg>
-                {Math.abs(pctChange).toFixed(0)}% vs last month
+                {pctChange !== null ? (
+                  <>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isUp ? T.positive : T.negative}
+                      strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: isUp ? 'none' : 'rotate(180deg)' }}>
+                      <polyline points="18 15 12 9 6 15"/>
+                    </svg>
+                    {Math.abs(pctChange).toFixed(0)}% vs last month
+                  </>
+                ) : (
+                  'New this month'
+                )}
               </span>
             )}
           </div>
