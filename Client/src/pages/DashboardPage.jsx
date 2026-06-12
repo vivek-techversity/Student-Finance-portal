@@ -5,6 +5,7 @@ import TargetCard from '../components/dashboard/TargetCard';
 import OverdueCard from '../components/dashboard/OverdueCard';
 import RegionBarChart from '../components/dashboard/RegionBarChart';
 import MethodDonut from '../components/dashboard/MethodDonut';
+import RevenueTrendChart from '../components/dashboard/RevenueTrendChart';
 import { fmtDate, fmt$ } from '../utils/formatters';
 
 // Payment method icons — SVG, no emoji
@@ -38,6 +39,17 @@ const DefaultPayIcon = () => (
     <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
   </svg>
 );
+
+function timeAgo(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const days = Math.floor((now.setHours(0,0,0,0) - new Date(d).setHours(0,0,0,0)) / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
 
 const T = {
   border:      '#E7E4E0',
@@ -84,6 +96,32 @@ export default function DashboardPage() {
       .reduce((a, p) => a + p.amountUSD, 0);
   }, [payments]);
 
+  const monthlySeries = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleString('en-US', { month: 'short' }), total: 0 });
+    }
+    payments.forEach((p) => {
+      const d = new Date(p.date);
+      const m = months.find((mo) => mo.year === d.getFullYear() && mo.month === d.getMonth());
+      if (m) {
+        const net = p.amountUSD - (p.bankCharge || 0) - (p.gatewayFee || 0) - (p.otherDeduction || 0);
+        m.total += net;
+      }
+    });
+    return months;
+  }, [payments]);
+
+  const trends = useMemo(() => {
+    const len = monthlySeries.length;
+    const cur = monthlySeries[len - 1]?.total || 0;
+    const prev = monthlySeries[len - 2]?.total || 0;
+    const pct = prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : (cur > 0 ? 100 : null);
+    return { received: pct, profit: pct };
+  }, [monthlySeries]);
+
   const regionData = useMemo(() => {
     const m = {};
     students.forEach((s) => {
@@ -128,7 +166,12 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Stats Grid */}
-      <StatsGrid totals={totals} liveRate={liveRate} />
+      <StatsGrid totals={totals} liveRate={liveRate} trends={trends} />
+
+      {/* Revenue Trend */}
+      <div className="mb-6">
+        <RevenueTrendChart series={monthlySeries} />
+      </div>
 
       {/* Target + Overdue */}
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -185,59 +228,65 @@ export default function DashboardPage() {
             <p className="text-xs mt-0.5" style={{ color: T.label }}>Payments will appear here</p>
           </div>
         ) : (
-          <div style={{ borderTop: 'none' }}>
+          <div className="px-5 pt-4 pb-2">
             {recentPayments.map((p, i) => {
               const net = p.amountUSD - (p.bankCharge || 0) - (p.gatewayFee || 0) - (p.otherDeduction || 0);
               const hasDeductions = (p.bankCharge || 0) + (p.gatewayFee || 0) + (p.otherDeduction || 0) > 0;
               const MethodIcon = MethodIcons[p.method] ? () => MethodIcons[p.method] : DefaultPayIcon;
               const initials = (p.studentName || '?')[0].toUpperCase();
+              const isLast = i === recentPayments.length - 1;
 
               return (
-                <div
-                  key={p._id}
-                  className="flex items-center gap-4 px-5 py-3.5 transition-colors"
-                  style={{
-                    borderBottom: i < recentPayments.length - 1 ? `1px solid ${T.borderLight}` : 'none',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAF9'}
-                  onMouseLeave={e => e.currentTarget.style.background = ''}
-                >
-                  {/* Avatar with initial */}
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                    style={{ background: T.iconBg, color: T.sub }}
-                  >
-                    {initials}
-                  </div>
-
-                  {/* Student + date + method */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: T.text }}>
-                      {p.studentName}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span style={{ color: T.label }}>
-                        <MethodIcon />
-                      </span>
-                      <p className="text-xs" style={{ color: T.label }}>
-                        {fmtDate(p.date)} · {p.method}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Amount */}
-                  <div className="text-right flex-shrink-0">
-                    <p
-                      className="text-sm font-bold"
-                      style={{ color: T.positive, fontVariantNumeric: 'tabular-nums' }}
+                <div key={p._id} className="flex gap-4 relative">
+                  {/* Timeline rail */}
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold z-10"
+                      style={{ background: T.iconBg, color: T.sub, border: `1px solid ${T.border}` }}
                     >
-                      {fmt$(p.amountUSD)}
-                    </p>
-                    {hasDeductions && (
-                      <p className="text-[11px]" style={{ color: T.label }}>
-                        net {fmt$(net)}
-                      </p>
+                      {initials}
+                    </div>
+                    {!isLast && (
+                      <div className="flex-1 w-px" style={{ background: T.borderLight, minHeight: '36px' }} />
                     )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 pb-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: T.text }}>
+                          {p.studentName}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span style={{ color: T.label }}>
+                            <MethodIcon />
+                          </span>
+                          <p className="text-xs" style={{ color: T.label }}>
+                            {p.method} · {fmtDate(p.date)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Amount */}
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-bold tabular-nums" style={{ color: T.positive }}>
+                          {fmt$(p.amountUSD)}
+                        </p>
+                        {hasDeductions && (
+                          <p className="text-[11px] tabular-nums" style={{ color: T.label }}>
+                            net {fmt$(net)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <span
+                      className="inline-block mt-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                      style={{ background: '#F5F3F0', color: T.sub }}
+                    >
+                      {timeAgo(p.date)}
+                    </span>
                   </div>
                 </div>
               );

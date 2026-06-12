@@ -2,19 +2,128 @@ import { useState } from 'react';
 import { fmt$, fmtINR, fmtDate } from '../../utils/formatters';
 import ConfirmDialog from '../ui/ConfirmDialog';
 
-const METHOD_META = {
-  'Bank Transfer': { icon: '🏦', color: '#6366f1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)' },
-  'UPI':           { icon: '📱', color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
-  'PayPal':        { icon: '🅿️', color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)' },
-  'EMI':           { icon: '💳', color: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.2)' },
-  'Other':         { icon: '💵', color: '#64748b', bg: 'rgba(100,116,139,0.08)', border: 'rgba(100,116,139,0.2)' },
+const T = {
+  border:  '#E7E4E0',
+  borderLight: '#F0EDE9',
+  label:   '#A8A29E',
+  sub:     '#78716C',
+  text:    '#1C1917',
+  headBg:  '#FAFAF9',
+  accent:  '#6366F1',
+  positive:'#059669',
+  negative:'#DC2626',
 };
+
+const METHOD_META = {
+  'Bank Transfer': { color: '#6366F1', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/>
+      <line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/>
+      <line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>
+    </svg>
+  )},
+  'UPI': { color: '#059669', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+    </svg>
+  )},
+  'PayPal': { color: '#D97706', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>
+    </svg>
+  )},
+  'EMI': { color: '#8B5CF6', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+  )},
+  'Other': { color: '#78716C', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+  )},
+};
+
+const BankIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/>
+    <line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/>
+    <line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/>
+  </svg>
+);
+const GatewayIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+const OtherDedIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const PackageIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+  </svg>
+);
+const PlusIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const TrashIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>
+  </svg>
+);
+const ChevronIcon = ({ open }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.label} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+const EmptyIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  </svg>
+);
+
+function MiniCard({ label, value, sub, color }) {
+  return (
+    <div className="rounded-xl px-3 py-2.5 bg-white" style={{ border: `1px solid ${T.border}` }}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: T.label }}>{label}</p>
+      <p className="text-[15px] font-extrabold tabular-nums" style={{ color }}>{value}</p>
+      {sub && <p className="text-[10px] mt-0.5" style={{ color: T.label }}>{sub}</p>}
+    </div>
+  );
+}
+
+function DeductionChip({ Icon, label, value }) {
+  return (
+    <div className="flex items-center gap-2 bg-white rounded-lg px-2.5 py-1.5" style={{ border: `1px solid ${T.border}` }}>
+      <span style={{ color: T.negative }}><Icon /></span>
+      <div>
+        <p className="text-[10px]" style={{ color: T.label }}>{label}</p>
+        <p className="text-xs font-bold" style={{ color: T.negative }}>−{fmt$(value)}</p>
+      </div>
+    </div>
+  );
+}
+
+function CostChip({ label, value }) {
+  return (
+    <div className="bg-white rounded-lg px-2.5 py-1.5" style={{ border: `1px solid ${T.border}` }}>
+      <p className="text-[10px]" style={{ color: T.label }}>{label}</p>
+      <p className="text-xs font-bold" style={{ color: T.accent }}>−{fmt$(value)}</p>
+    </div>
+  );
+}
 
 export default function PaymentTimeline({ payments, onDelete, onAddPayment, student }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [expanded, setExpanded] = useState({});
 
-  // Sort by date desc; same-date: use _id (MongoDB ObjectId = chronological)
   const sorted = [...payments].sort((a, b) => {
     const dateDiff = new Date(b.date) - new Date(a.date);
     if (dateDiff !== 0) return dateDiff;
@@ -23,228 +132,137 @@ export default function PaymentTimeline({ payments, onDelete, onAddPayment, stud
   const oldestId = sorted.length > 0 ? sorted[sorted.length - 1]._id : null;
   const hasCosts = student && ((student.uniFee||0)+(student.consultantComm||0)+(student.thesisCost||0)+(student.shipmentCost||0)) > 0;
 
-  const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+  const toggle = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <p style={{ fontSize: '13px', fontWeight: 700, color: '#334155', margin: 0 }}>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm font-bold" style={{ color: T.text }}>
           {payments.length} Payment{payments.length !== 1 ? 's' : ''}
         </p>
-        <button onClick={onAddPayment}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            padding: '7px 14px', borderRadius: '10px', border: 'none',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            fontSize: '12px', fontWeight: 700, color: 'white',
-            cursor: 'pointer', fontFamily: 'inherit',
-            boxShadow: '0 3px 10px rgba(99,102,241,0.3)',
-          }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 14px rgba(99,102,241,0.45)'}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = '0 3px 10px rgba(99,102,241,0.3)'}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Add Payment
+        <button
+          onClick={onAddPayment}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white"
+          style={{ background: '#1C1917', cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}
+        >
+          <PlusIcon /> Add Payment
         </button>
       </div>
 
       {sorted.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#94a3b8' }}>
-          <p style={{ fontSize: '32px', marginBottom: '8px' }}>💸</p>
-          <p style={{ fontSize: '14px', fontWeight: 600, color: '#64748b' }}>No payments yet</p>
-          <p style={{ fontSize: '12px', marginTop: '4px' }}>Click "Add Payment" to record the first one</p>
+        <div className="text-center py-12">
+          <div className="flex justify-center mb-2"><EmptyIcon /></div>
+          <p className="text-sm font-semibold" style={{ color: T.sub }}>No payments yet</p>
+          <p className="text-xs mt-1" style={{ color: T.label }}>Click "Add Payment" to record the first one</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="flex flex-col gap-2.5">
           {sorted.map((p) => {
-            const meta       = METHOD_META[p.method] || METHOD_META['Other'];
-            const isOldest   = p._id === oldestId;
-            const bankCharge = p.bankCharge     || 0;
-            const gatewayFee = p.gatewayFee     || 0;
-            const otherDed   = p.otherDeduction || 0;
-            const totalDed   = bankCharge + gatewayFee + otherDed;
-            const net        = p.amountUSD - totalDed;
-            const netINR     = net * (p.exchangeRate || 83);
-            const isOpen     = expanded[p._id];
+            const meta = METHOD_META[p.method] || METHOD_META['Other'];
+            const isOldest = p._id === oldestId;
+            const bankCharge = p.bankCharge || 0;
+            const gatewayFee = p.gatewayFee || 0;
+            const otherDed = p.otherDeduction || 0;
+            const totalDed = bankCharge + gatewayFee + otherDed;
+            const net = p.amountUSD - totalDed;
+            const netINR = net * (p.exchangeRate || 83);
+            const isOpen = expanded[p._id];
 
             return (
-              <div key={p._id} style={{
-                borderRadius: '14px',
-                border: `1px solid ${isOpen ? 'rgba(99,102,241,0.2)' : 'rgba(226,232,240,0.8)'}`,
-                borderLeft: `4px solid ${meta.color}`,
-                background: 'white',
-                overflow: 'hidden',
-                transition: 'all 0.2s',
-                boxShadow: isOpen ? '0 4px 16px rgba(99,102,241,0.08)' : '0 1px 4px rgba(0,0,0,0.04)',
-              }}>
-
-                {/* ── Main row ── */}
-                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                  onClick={() => toggle(p._id)}>
-
+              <div
+                key={p._id}
+                className="rounded-2xl bg-white overflow-hidden transition-all"
+                style={{ border: `1px solid ${T.border}`, borderLeft: `3px solid ${meta.color}` }}
+              >
+                {/* Main row */}
+                <div className="px-4 py-3.5 flex items-center gap-3 cursor-pointer" onClick={() => toggle(p._id)}>
                   {/* Method icon */}
-                  <div style={{
-                    width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
-                    background: meta.bg, border: `1px solid ${meta.border}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
-                  }}>
+                  <div
+                    className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center"
+                    style={{ background: '#F5F3F0', color: meta.color }}
+                  >
                     {meta.icon}
                   </div>
 
-                  {/* Left info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 800, color: '#10b981' }}>
-                        {fmt$(p.amountUSD)}
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>paid</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#6366f1' }}>
-                        → {fmt$(net)} received
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        ({fmtINR(netINR)})
-                      </span>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-base font-extrabold tabular-nums" style={{ color: T.positive }}>{fmt$(p.amountUSD)}</span>
+                      <span className="text-[11px]" style={{ color: T.label }}>paid</span>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: T.accent }}>→ {fmt$(net)} received</span>
+                      <span className="text-[11px] tabular-nums" style={{ color: T.label }}>({fmtINR(netINR)})</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '3px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>{fmtDate(p.date)}</span>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: meta.color }}>{p.method}</span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>₹{p.exchangeRate}/USD</span>
-                      {p.note && <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>"{p.note}"</span>}
+                    <div className="flex gap-2.5 mt-0.5 flex-wrap">
+                      <span className="text-[11px]" style={{ color: T.label }}>{fmtDate(p.date)}</span>
+                      <span className="text-[11px] font-semibold" style={{ color: meta.color }}>{p.method}</span>
+                      <span className="text-[11px] tabular-nums" style={{ color: T.label }}>₹{p.exchangeRate}/USD</span>
+                      {p.note && <span className="text-[11px] italic" style={{ color: T.label }}>"{p.note}"</span>}
                     </div>
                   </div>
 
-                  {/* Right: pills + delete + expand */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  {/* Right pills + actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {totalDed > 0 && (
-                      <span style={{
-                        fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '99px',
-                        background: 'rgba(239,68,68,0.08)', color: '#ef4444',
-                        border: '1px solid rgba(239,68,68,0.15)',
-                      }}>
+                      <span
+                        className="text-[10px] font-bold px-2 py-1 rounded-full"
+                        style={{ background: '#FEF2F2', color: T.negative, border: `1px solid #FECACA` }}
+                      >
                         −{fmt$(totalDed)} charges
                       </span>
                     )}
                     {isOldest && hasCosts && (
-                      <span style={{
-                        fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '99px',
-                        background: 'rgba(139,92,246,0.08)', color: '#8b5cf6',
-                        border: '1px solid rgba(139,92,246,0.2)',
-                      }} title="Cost breakdown was applied on this payment">
-                        📦 costs applied
+                      <span
+                        className="text-[10px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1"
+                        style={{ background: '#F5F3FF', color: '#8B5CF6', border: `1px solid #E9D5FF` }}
+                        title="Cost breakdown was applied on this payment"
+                      >
+                        <PackageIcon /> costs applied
                       </span>
                     )}
 
-                    {/* Delete only */}
-                    <button onClick={e => { e.stopPropagation(); setDeleteTarget(p); }}
-                      style={{ width: '30px', height: '30px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ef4444' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.12)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.06)'}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6"/>
-                      </svg>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(p); }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ background: '#FEF2F2', border: `1px solid #FECACA`, color: T.negative, cursor: 'pointer' }}
+                    >
+                      <TrashIcon />
                     </button>
 
-                    {/* Expand arrow */}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5"
-                      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
-                      <polyline points="6 9 12 15 18 9"/>
-                    </svg>
+                    <ChevronIcon open={isOpen} />
                   </div>
                 </div>
 
-                {/* ── Expanded detail ── */}
+                {/* Expanded */}
                 {isOpen && (
-                  <div style={{ borderTop: '1px solid #f1f5f9', padding: '14px 16px', background: '#fafbff' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: totalDed > 0 ? '14px' : 0 }}>
-
-                      <div style={{ background: 'white', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(16,185,129,0.15)' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>Amount Paid</p>
-                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#10b981', margin: 0 }}>{fmt$(p.amountUSD)}</p>
-                        <p style={{ fontSize: '10px', color: '#94a3b8', margin: '2px 0 0' }}>Gross amount</p>
-                      </div>
-
-                      <div style={{ background: 'white', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(239,68,68,0.15)' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>Total Charges</p>
-                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#ef4444', margin: 0 }}>−{fmt$(totalDed)}</p>
-                        <p style={{ fontSize: '10px', color: '#94a3b8', margin: '2px 0 0' }}>Deducted</p>
-                      </div>
-
-                      <div style={{ background: 'white', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(99,102,241,0.15)' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 4px' }}>Net Received</p>
-                        <p style={{ fontSize: '15px', fontWeight: 800, color: '#6366f1', margin: 0 }}>{fmt$(net)}</p>
-                        <p style={{ fontSize: '10px', color: '#94a3b8', margin: '2px 0 0' }}>{fmtINR(netINR)}</p>
-                      </div>
+                  <div className="px-4 py-3.5" style={{ borderTop: `1px solid ${T.border}`, background: T.headBg }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5" style={{ marginBottom: totalDed > 0 ? '14px' : 0 }}>
+                      <MiniCard label="Amount Paid" value={fmt$(p.amountUSD)} sub="Gross amount" color={T.positive} />
+                      <MiniCard label="Total Charges" value={`−${fmt$(totalDed)}`} sub="Deducted" color={T.negative} />
+                      <MiniCard label="Net Received" value={fmt$(net)} sub={fmtINR(netINR)} color={T.accent} />
                     </div>
 
                     {totalDed > 0 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>Charge Breakdown</p>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {bankCharge > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <span style={{ fontSize: '12px' }}>🏦</span>
-                              <div>
-                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>Bank Charge</p>
-                                <p style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', margin: 0 }}>−{fmt$(bankCharge)}</p>
-                              </div>
-                            </div>
-                          )}
-                          {gatewayFee > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <span style={{ fontSize: '12px' }}>⚡</span>
-                              <div>
-                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>Gateway Fee</p>
-                                <p style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', margin: 0 }}>−{fmt$(gatewayFee)}</p>
-                              </div>
-                            </div>
-                          )}
-                          {otherDed > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <span style={{ fontSize: '12px' }}>📌</span>
-                              <div>
-                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>Other</p>
-                                <p style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', margin: 0 }}>−{fmt$(otherDed)}</p>
-                              </div>
-                            </div>
-                          )}
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: T.label }}>Charge Breakdown</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {bankCharge > 0 && <DeductionChip Icon={BankIcon} label="Bank Charge" value={bankCharge} />}
+                          {gatewayFee > 0 && <DeductionChip Icon={GatewayIcon} label="Gateway Fee" value={gatewayFee} />}
+                          {otherDed > 0 && <DeductionChip Icon={OtherDedIcon} label="Other" value={otherDed} />}
                         </div>
                       </div>
                     )}
 
                     {isOldest && hasCosts && student && (
-                      <div style={{ marginTop: '12px', borderTop: '1px dashed rgba(139,92,246,0.2)', paddingTop: '12px' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>
-                          📦 Cost Breakdown (deducted from profit)
+                      <div className="mt-3 pt-3" style={{ borderTop: `1px dashed ${T.border}` }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wide mb-2 inline-flex items-center gap-1" style={{ color: '#8B5CF6' }}>
+                          <PackageIcon /> Cost Breakdown (deducted from profit)
                         </p>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {student.uniFee > 0 && (
-                            <div style={{ background: 'white', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <p style={{ fontSize: '10px', color: '#94a3b8', margin: '0 0 2px' }}>University Fee</p>
-                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#8b5cf6', margin: 0 }}>−{fmt$(student.uniFee)}</p>
-                            </div>
-                          )}
-                          {student.consultantComm > 0 && (
-                            <div style={{ background: 'white', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <p style={{ fontSize: '10px', color: '#94a3b8', margin: '0 0 2px' }}>Consultant</p>
-                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#8b5cf6', margin: 0 }}>−{fmt$(student.consultantComm)}</p>
-                            </div>
-                          )}
-                          {student.thesisCost > 0 && (
-                            <div style={{ background: 'white', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <p style={{ fontSize: '10px', color: '#94a3b8', margin: '0 0 2px' }}>Thesis</p>
-                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#8b5cf6', margin: 0 }}>−{fmt$(student.thesisCost)}</p>
-                            </div>
-                          )}
-                          {student.shipmentCost > 0 && (
-                            <div style={{ background: 'white', border: '1px solid rgba(139,92,246,0.15)', borderRadius: '8px', padding: '6px 10px' }}>
-                              <p style={{ fontSize: '10px', color: '#94a3b8', margin: '0 0 2px' }}>Shipment</p>
-                              <p style={{ fontSize: '12px', fontWeight: 700, color: '#8b5cf6', margin: 0 }}>−{fmt$(student.shipmentCost)}</p>
-                            </div>
-                          )}
+                        <div className="flex gap-2 flex-wrap">
+                          {student.uniFee > 0 && <CostChip label="University Fee" value={student.uniFee} />}
+                          {student.consultantComm > 0 && <CostChip label="Consultant" value={student.consultantComm} />}
+                          {student.thesisCost > 0 && <CostChip label="Thesis" value={student.thesisCost} />}
+                          {student.shipmentCost > 0 && <CostChip label="Shipment" value={student.shipmentCost} />}
                         </div>
                       </div>
                     )}
